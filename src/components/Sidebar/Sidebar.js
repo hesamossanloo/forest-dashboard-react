@@ -26,10 +26,10 @@ import PerfectScrollbar from 'perfect-scrollbar';
 
 // reactstrap components
 import Accordion from 'components/Accordion/Accordion';
+import HKFilters from 'components/Filters/HKFilters';
 import PriceForm from 'components/PriceForm/PriceForm';
 import { BackgroundColorContext } from 'contexts/BackgroundColorContext';
-import { MapFilterContext } from 'contexts/MapFilterContext';
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Nav } from 'reactstrap';
 
 var ps;
@@ -41,8 +41,6 @@ function Sidebar(props) {
   const activeRoute = (routeName) => {
     return location.pathname === routeName ? 'active' : '';
   };
-
-  const [mapFilter, setMapFilter] = useContext(MapFilterContext);
 
   useEffect(() => {
     if (navigator.platform.indexOf('Win') > -1) {
@@ -139,8 +137,20 @@ function Sidebar(props) {
                     </NavLink>
                     {prop.name === 'Map' && (
                       <>
-                        <Accordion onChange={setMapFilter} defaultOpen={true} />
-                        <PriceForm />
+                        <Accordion
+                          id="hk-filters"
+                          defaultOpen={true}
+                          label="FILTER"
+                        >
+                          <HKFilters />
+                        </Accordion>
+                        <Accordion
+                          id="user-priser"
+                          defaultOpen={true}
+                          label="PRISER"
+                        >
+                          <PriceForm />
+                        </Accordion>
                       </>
                     )}
                   </li>
