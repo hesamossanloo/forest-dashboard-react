@@ -15,7 +15,7 @@ const DDStyle = {
 
 const ForestSelector = ({ isOpen, toggle, onSelectForest }) => (
   <Dropdown isOpen={isOpen} toggle={toggle} style={DDStyle}>
-    <DropdownToggle caret color="info">
+    <DropdownToggle caret color="info" style={{ padding: 10 }}>
       Choose your Forest
     </DropdownToggle>
     <DropdownMenu>

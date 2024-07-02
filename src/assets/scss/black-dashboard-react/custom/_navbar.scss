@@ -1,5 +1,5 @@
 .navbar {
-  padding: 10px 30px 10px 15px;
+  padding: 10px 0px 10px 15px;
   width: 100%;
   z-index: 1050;
   background: $navbar-color;
@@ -40,7 +40,7 @@
   }
 
   &.navbar-map {
-    background: rgb(30 30 47 / 54%) !important
+    background: rgb(30 30 47 / 54%) !important;
   }
 
   &.bg-white {
@@ -63,7 +63,6 @@
           color: $black;
         }
       }
-
     }
 
     .navbar-text,
@@ -78,7 +77,6 @@
     .form-control::placeholder {
       color: $dark-gray !important;
     }
-
   }
 
   &.bg-dark {
@@ -107,8 +105,8 @@
 
   .navbar-brand {
     position: fixed;
-    padding-top: .3125rem;
-    padding-bottom: .3125rem;
+    padding-top: 0.3125rem;
+    padding-bottom: 0.3125rem;
     color: $white;
     margin-left: 17px;
     margin-top: 3px;
@@ -120,7 +118,6 @@
   .navbar-toggler {
     outline: none;
   }
-
 }
 
 .clear-search {
@@ -137,11 +134,11 @@
 }
 
 .MuiAutocomplete-listbox {
-  background-color: rgba(30, 30, 47, 0.54)
+  background-color: rgba(30, 30, 47, 0.54);
 }
 
 .MuiAutocomplete-option {
-  background-color: rgba(30, 30, 47, 0.54)
+  background-color: rgba(30, 30, 47, 0.54);
 }
 
 .navbar-minimize-fixed {
@@ -204,7 +201,6 @@
     }
 
     .navbar-nav {
-
       .btn {
         margin-left: -3px;
         display: flex;
@@ -264,7 +260,6 @@
 
     .dropdown.show .dropdown-menu {
       display: block;
-
     }
 
     .dropdown .dropdown-menu {
@@ -301,7 +296,7 @@
       color: $default;
     }
 
-    button.navbar-toggler[data-target="#navigation"] {
+    button.navbar-toggler[data-target='#navigation'] {
       padding-top: 0;
     }
 
@@ -320,17 +315,17 @@
         border-radius: 50%;
       }
 
-      &+.navbar-toggler-bar {
+      & + .navbar-toggler-bar {
         margin-top: 7px;
       }
 
-      &+.navbar-toggler-bar.navbar-kebab {
+      & + .navbar-toggler-bar.navbar-kebab {
         margin-top: 0px;
       }
 
       &.bar2 {
         width: 17px;
-        transition: width .2s linear;
+        transition: width 0.2s linear;
       }
     }
 
@@ -341,7 +336,7 @@
     & .toggled .navbar-toggler-bar {
       width: 24px;
 
-      &+.navbar-toggler-bar {
+      & + .navbar-toggler-bar {
         margin-top: 5px;
       }
     }
@@ -354,10 +349,9 @@
 
   .navbar-nav {
     .nav-link {
-
       i.fa,
       i.tim-icons {
-        opacity: .5;
+        opacity: 0.5;
       }
     }
   }
@@ -430,7 +424,6 @@
       opacity: 1;
     }
   }
-
 }
 
 @media screen and (min-width: 992px) {
