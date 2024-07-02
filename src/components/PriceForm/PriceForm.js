@@ -41,12 +41,15 @@ const PriceForm = () => {
     hogstUtkPrice: '',
   };
   const { currentUser, userSpeciesPrices, updateUserSpeciesPrices } = useAuth();
-  const [formData, setFormData] = useState(userSpeciesPrices || initialState);
+  const [formData, setFormData] = useState({
+    ...initialState,
+    ...userSpeciesPrices,
+  });
   const [isSubmitted, setIsSubmitted] = useState(false); // Step 1
 
   // Use useEffect to update formData when prices changes
   useEffect(() => {
-    setFormData(userSpeciesPrices || initialState);
+    setFormData({ ...initialState, ...userSpeciesPrices });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSpeciesPrices]);
 
