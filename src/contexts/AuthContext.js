@@ -16,7 +16,14 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../services/firebase';
 
 const AuthContext = createContext();
-
+const initialPrices = {
+  granSagtommerPrice: '',
+  granMassevirkePrice: '',
+  furuSagtommerPrice: '',
+  furuMassevirkePrice: '',
+  bjorkSamsPrice: '',
+  hogstUtkPrice: '',
+};
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -28,17 +35,26 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+
+      const addPrices = async (userDocRef) => {
+        await setDoc(userDocRef, { prices: initialPrices }, { merge: true });
+        setUserSpeciesPrices(initialPrices);
+      };
+
       if (user) {
         // Fetch prices after successful login
         const userDocRef = doc(db, 'users', user.uid);
         getDoc(userDocRef).then((docSnap) => {
           if (docSnap.exists()) {
             const userData = docSnap.data();
+            if (!userData.prices) {
+              addPrices(userDocRef);
+            }
             setUserSpeciesPrices(userData.prices); // Set prices in the context
           }
         });
       } else {
-        setUserSpeciesPrices({}); // Reset prices if there's no user
+        setUserSpeciesPrices(initialPrices); // Reset prices if there's no user
       }
       setLoading(false);
     });

@@ -32,7 +32,7 @@ const buttonContainerStyle = {
 };
 
 const PriceForm = () => {
-  const initialState = {
+  const initialPrices = {
     granSagtommerPrice: '',
     granMassevirkePrice: '',
     furuSagtommerPrice: '',
@@ -42,14 +42,14 @@ const PriceForm = () => {
   };
   const { currentUser, userSpeciesPrices, updateUserSpeciesPrices } = useAuth();
   const [formData, setFormData] = useState({
-    ...initialState,
+    ...initialPrices,
     ...userSpeciesPrices,
   });
   const [isSubmitted, setIsSubmitted] = useState(false); // Step 1
 
   // Use useEffect to update formData when prices changes
   useEffect(() => {
-    setFormData({ ...initialState, ...userSpeciesPrices });
+    setFormData({ ...initialPrices, ...userSpeciesPrices });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSpeciesPrices]);
 
@@ -73,7 +73,7 @@ const PriceForm = () => {
   };
   const resetForm = (e) => {
     e.preventDefault(); // Prevent form submission if you have a submit handler
-    setFormData(initialState);
+    setFormData(initialPrices);
     setIsSubmitted(false); // Optionally reset the submission state
   };
 

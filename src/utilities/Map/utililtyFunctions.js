@@ -147,9 +147,8 @@ export const calculateFeatInfoHKTotals = (
       if (userSpeciesPrices.hogstUtkPrice) {
         acc.totalNettoVerdi +=
           parseFloat(airTableRowFields.volume_at_maturity_without_bark) *
-            parseFloat(airTableRowFields.avg_price_m3) -
-            parseFloat(airTableRowFields.volume_at_maturity_without_bark) *
-              parseFloat(userSpeciesPrices.hogstUtkPrice) || 0;
+            (parseFloat(airTableRowFields.avg_price_m3) -
+              parseFloat(userSpeciesPrices.hogstUtkPrice)) || 0;
       }
 
       return acc;
