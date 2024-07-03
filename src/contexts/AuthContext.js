@@ -21,7 +21,8 @@ const initialPrices = {
   granMassevirkePrice: '',
   furuSagtommerPrice: '',
   furuMassevirkePrice: '',
-  bjorkSamsPrice: '',
+  lauvSagtommerPrice: '',
+  lauvMassevirkePrice: '',
   hogstUtkPrice: '',
 };
 export const useAuth = () => useContext(AuthContext);
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const [userSpeciesPrices, setUserSpeciesPrices] = useState({}); // New state for prices
 
   useEffect(() => {
+    setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
 
@@ -66,6 +68,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateUserSpeciesPrices = async (newPrices) => {
     if (!currentUser) return; // Guard clause if there's no logged-in user
+    setLoading(true);
 
     const userDocRef = doc(db, 'users', currentUser.uid);
     try {
@@ -74,6 +77,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Error updating prices: ', error);
       // Optionally, handle the error, e.g., by setting an error state
+    } finally {
+      setLoading(false);
     }
   };
   const signUp = async (email, password, firstName, lastName) => {

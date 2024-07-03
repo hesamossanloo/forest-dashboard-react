@@ -1,3 +1,4 @@
+import { useAirtable } from 'contexts/AirtableContext';
 import { useAuth } from 'contexts/AuthContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -37,10 +38,12 @@ const PriceForm = () => {
     granMassevirkePrice: '',
     furuSagtommerPrice: '',
     furuMassevirkePrice: '',
-    bjorkSamsPrice: '',
+    lauvSagtommerPrice: '',
+    lauvMassevirkePrice: '',
     hogstUtkPrice: '',
   };
   const { currentUser, userSpeciesPrices, updateUserSpeciesPrices } = useAuth();
+  const { airTablePricesCosts, isFetching } = useAirtable();
   const [formData, setFormData] = useState({
     ...initialPrices,
     ...userSpeciesPrices,
@@ -49,10 +52,22 @@ const PriceForm = () => {
 
   // Use useEffect to update formData when prices changes
   useEffect(() => {
-    setFormData({ ...initialPrices, ...userSpeciesPrices });
+    if (
+      Object.keys(userSpeciesPrices).length === 0 ||
+      userSpeciesPrices.granSagtommerPrice === ''
+    ) {
+      if (!isFetching && Object.keys(airTablePricesCosts).length > 0) {
+        updateUserSpeciesPrices(airTablePricesCosts);
+        setFormData({ ...initialPrices, ...airTablePricesCosts });
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userSpeciesPrices]);
-
+  }, [
+    airTablePricesCosts,
+    updateUserSpeciesPrices,
+    userSpeciesPrices,
+    isFetching,
+  ]);
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent form submission if you have a submit handler
     // Firestore: Save formData to a collection named "prices"
@@ -156,13 +171,13 @@ const PriceForm = () => {
             />
           </FormGroup>
           <FormGroup>
-            <Label for="bjorkSamsPrice">Bjørk - Sams</Label>
+            <Label for="lauvMassevirkePrice">Bjørk - Sams</Label>
             <Input
-              name="bjork-sams"
-              id="bjorkSamsPrice"
+              name="lauv-massevirke"
+              id="lauvMassevirkePrice"
               placeholder="e.g. 586"
               style={{ fontSize: '14px' }}
-              value={formData.bjorkSamsPrice}
+              value={formData.lauvMassevirkePrice}
               onChange={handleChange} // Update this
             />
           </FormGroup>

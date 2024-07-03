@@ -1,9 +1,9 @@
+import { useAirtable } from 'contexts/AirtableContext';
 import { useAuth } from 'contexts/AuthContext';
-import { FeatureInfosContext } from 'contexts/FeatureInfosContext';
 import L from 'leaflet';
 import { WMSGetFeatureInfo } from 'ol/format';
 import PropTypes from 'prop-types';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMap, useMapEvents } from 'react-leaflet';
 import {
   MIS_BESTAND_IDs,
@@ -54,7 +54,7 @@ export default function CustomMapEvents(props) {
   } = props;
   const map = useMap();
   const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const { airTableBestandInfos, isFetching } = useContext(FeatureInfosContext);
+  const { airTableBestandInfos, isFetching } = useAirtable();
   const { userSpeciesPrices } = useAuth();
 
   // Check if the click is within the coordinates of a GeoJSON
