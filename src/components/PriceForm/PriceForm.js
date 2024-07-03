@@ -15,6 +15,7 @@ import {
 } from 'reactstrap';
 import { db } from 'services/firebase';
 import lottieSuccess from '../../assets/lotties/success.json';
+
 const cardStyle = {
   background: 'transparent',
   boxShadow: 'none',
@@ -42,64 +43,67 @@ const PriceForm = () => {
     lauvMassevirkePrice: '',
     hogstUtkPrice: '',
   };
-  const { currentUser, userSpeciesPrices, updateUserSpeciesPrices } = useAuth();
-  const { airTablePricesCosts, isFetching } = useAirtable();
-  const [formData, setFormData] = useState({
-    ...initialPrices,
-    ...userSpeciesPrices,
-  });
-  const [isSubmitted, setIsSubmitted] = useState(false); // Step 1
-
-  // Use useEffect to update formData when prices changes
-  useEffect(() => {
-    if (
-      Object.keys(userSpeciesPrices).length === 0 ||
-      userSpeciesPrices.granSagtommerPrice === ''
-    ) {
-      if (!isFetching && Object.keys(airTablePricesCosts).length > 0) {
-        updateUserSpeciesPrices(airTablePricesCosts);
-        setFormData({ ...initialPrices, ...airTablePricesCosts });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    airTablePricesCosts,
-    updateUserSpeciesPrices,
+  const {
+    currentUser,
     userSpeciesPrices,
-    isFetching,
-  ]);
+    updateUserSpeciesPrices,
+    loading: authLoading,
+  } = useAuth();
+  const { airTablePricesCosts, isFetching } = useAirtable();
+  const [formData, setFormData] = useState(initialPrices);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (!isFetching && userSpeciesPrices.granSagtommerPrice !== '') {
+      setFormData({ ...initialPrices, ...userSpeciesPrices });
+    } else if (!isFetching) {
+      setFormData({ ...initialPrices, ...airTablePricesCosts });
+    }
+  }, [isFetching, userSpeciesPrices]);
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent form submission if you have a submit handler
-    // Firestore: Save formData to a collection named "prices"
+    e.preventDefault();
     if (currentUser) {
       try {
         const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, {
-          prices: formData,
-        });
-        await updateUserSpeciesPrices(formData); // Update prices in the context and Firestore
-        setIsSubmitted(true); // Step 2
-        setTimeout(() => setIsSubmitted(false), 1500); // Optional: Hide tick after 3 seconds
+        await updateDoc(userDocRef, { prices: formData });
+        await updateUserSpeciesPrices(formData);
+        setIsSubmitted(true);
+        setTimeout(() => setIsSubmitted(false), 1500);
       } catch (error) {
         console.error('Error adding document: ', error);
-        // Handle errors, e.g., show an error message to the user
       }
     }
   };
-  const resetForm = (e) => {
-    e.preventDefault(); // Prevent form submission if you have a submit handler
-    setFormData(initialPrices);
-    setIsSubmitted(false); // Optionally reset the submission state
+
+  const resetForm = async (e) => {
+    e.preventDefault();
+    if (currentUser) {
+      try {
+        setFormData(airTablePricesCosts);
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, { prices: airTablePricesCosts });
+        await updateUserSpeciesPrices(airTablePricesCosts);
+        setIsSubmitted(true);
+        setTimeout(() => setIsSubmitted(false), 1500);
+      } catch (error) {
+        console.error('Error adding document: ', error);
+      }
+    }
   };
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
     const { id, value } = e.target;
-    setIsSubmitted(false); // Optionally reset the submission state when editing
+    setIsSubmitted(false);
     setFormData((prevState) => ({
       ...prevState,
       [id]: value,
     }));
   };
+
+  if (authLoading || isFetching) {
+    return <div>Loading...</div>;
+  }
   return (
     <Card style={cardStyle}>
       <CardBody>
@@ -216,7 +220,6 @@ const PriceForm = () => {
           <div style={buttonContainerStyle}>
             <Button
               color="primary"
-              type="submit"
               style={{ fontSize: '12px', padding: '8px' }}
               onClick={handleSubmit}
             >
@@ -224,7 +227,6 @@ const PriceForm = () => {
             </Button>
             <Button
               color="primary"
-              type="submit"
               style={{ fontSize: '12px', padding: '8px' }}
               onClick={resetForm}
             >

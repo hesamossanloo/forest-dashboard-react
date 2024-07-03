@@ -138,10 +138,6 @@ export const calculateFeatInfoHKTotals = (
       acc.totalBruttoVerdi +=
         parseFloat(airTableRowFields.volume_at_maturity_without_bark) *
           parseFloat(airTableRowFields.avg_price_m3) || 0;
-      // TODO Ask Mads about the gross value calculation
-      // acc.totalBruttoVerdi +=
-      //   parseFloat(airTableRowFields.gross_value_standing_volume) || 0;
-
       // from https://trello.com/c/RTkPLbFf/330-let-forester-provide-input-prices-and-logging-costs
       // totalNettoVerdi = Forv. Brutto Verdi - volume_at_maturity_without_bark * hogst&utkjøring_cost_per_m3
       if (userSpeciesPrices.hogstUtkPrice) {
@@ -186,8 +182,6 @@ export const calculateAvgPrice = (
             parseFloat(userSpeciesPrices.granSagtommerPrice) +
           (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
             parseFloat(userSpeciesPrices.granMassevirkePrice);
-      } else {
-        avgPrice = corresponsingAirtTableFeature.avg_price_m3;
       }
       break;
     case SPECIES.FURU:
@@ -200,13 +194,19 @@ export const calculateAvgPrice = (
             parseFloat(userSpeciesPrices.furuSagtommerPrice) +
           (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
             parseFloat(userSpeciesPrices.furuMassevirkePrice);
-      } else {
-        avgPrice = corresponsingAirtTableFeature.avg_price_m3;
       }
       break;
     case SPECIES.LAU:
-      // TODO Ask Mads what about Bjork Lau and the saw and pulp prices
-      avgPrice = corresponsingAirtTableFeature.avg_price_m3;
+      if (
+        userSpeciesPrices.lauvSagtommerPrice &&
+        userSpeciesPrices.lauvMassevirkePrice
+      ) {
+        avgPrice =
+          parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
+            parseFloat(userSpeciesPrices.lauvSagtommerPrice) +
+          (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
+            parseFloat(userSpeciesPrices.lauvMassevirkePrice);
+      }
       break;
     default:
       avgPrice = 0;
@@ -267,7 +267,16 @@ export const generateHKPopupContent = (
       content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.avg_price_m3, 'nb-NO', 1)}</td>`;
       content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.volume_at_maturity_without_bark * corresponsingAirtTableFeature.avg_price_m3, 'nb-NO', 1)}</td>`;
       if (userSpeciesPrices.hogstUtkPrice) {
-        content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.volume_at_maturity_without_bark * corresponsingAirtTableFeature.avg_price_m3 - corresponsingAirtTableFeature.volume_at_maturity_without_bark * userSpeciesPrices.hogstUtkPrice, 'nb-NO', 1)}</td>`;
+        content += `
+        <td style="padding: 5px; border: 1px solid black;">
+          ${formatNumber(
+            corresponsingAirtTableFeature.volume_at_maturity_without_bark *
+              (corresponsingAirtTableFeature.avg_price_m3 -
+                userSpeciesPrices.hogstUtkPrice),
+            'nb-NO',
+            1
+          )}
+        </td>`;
       }
       content += '</tr>';
     });

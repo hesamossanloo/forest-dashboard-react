@@ -31,32 +31,23 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const [userSpeciesPrices, setUserSpeciesPrices] = useState({}); // New state for prices
+  const [userSpeciesPrices, setUserSpeciesPrices] = useState(initialPrices); // New state for prices
 
   useEffect(() => {
     setLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-
-      const addPrices = async (userDocRef) => {
-        await setDoc(userDocRef, { prices: initialPrices }, { merge: true });
-        setUserSpeciesPrices(initialPrices);
-      };
-
       if (user) {
         // Fetch prices after successful login
         const userDocRef = doc(db, 'users', user.uid);
         getDoc(userDocRef).then((docSnap) => {
           if (docSnap.exists()) {
             const userData = docSnap.data();
-            if (!userData.prices) {
-              addPrices(userDocRef);
+            if (userData.prices) {
+              setUserSpeciesPrices(userData.prices); // Set prices in the context
             }
-            setUserSpeciesPrices(userData.prices); // Set prices in the context
           }
         });
-      } else {
-        setUserSpeciesPrices(initialPrices); // Reset prices if there's no user
       }
       setLoading(false);
     });
@@ -68,19 +59,23 @@ export const AuthProvider = ({ children }) => {
 
   const updateUserSpeciesPrices = async (newPrices) => {
     if (!currentUser) return; // Guard clause if there's no logged-in user
-    setLoading(true);
 
     const userDocRef = doc(db, 'users', currentUser.uid);
     try {
       await setDoc(userDocRef, { prices: newPrices }, { merge: true });
-      setUserSpeciesPrices(newPrices); // Update prices in the context
+
+      // Only update state if prices actually changed
+      setUserSpeciesPrices((prevPrices) => {
+        if (JSON.stringify(prevPrices) !== JSON.stringify(newPrices)) {
+          return newPrices;
+        }
+        return prevPrices;
+      });
     } catch (error) {
       console.error('Error updating prices: ', error);
-      // Optionally, handle the error, e.g., by setting an error state
-    } finally {
-      setLoading(false);
     }
   };
+
   const signUp = async (email, password, firstName, lastName) => {
     setLoading(true); // Set loading to true at the start of the function
     try {
