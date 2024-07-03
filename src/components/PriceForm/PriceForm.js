@@ -241,7 +241,7 @@ const PriceForm = () => {
               style={{ fontSize: '12px', padding: '8px' }}
               onClick={resetForm}
             >
-              Tilbakestil priser
+              Tilbakestill priser
             </Button>
           </div>
           {isSubmitted && (
