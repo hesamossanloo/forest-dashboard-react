@@ -43,12 +43,9 @@ const HKFilters = () => {
 
   // whenever the mapFilter.HK5 changes, update the mapFilter.V
   useEffect(() => {
-    const delay = isFetching ? 2000 : 0;
-    setTimeout(() => {
-      const [sumV, sumWorth] = calculateVolume();
-      setVolume(sumV);
-      setESTGrossValue(sumWorth);
-    }, delay);
+    const [sumV, sumWorth] = calculateVolume();
+    setVolume(sumV);
+    setESTGrossValue(sumWorth);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapFilter, isFetching]);
   return (
@@ -66,6 +63,7 @@ const HKFilters = () => {
           optionLabels={['ON', 'OFF']}
           small
           checked={mapFilter.HK5}
+          disabled={isFetching}
           onChange={() =>
             setMapFilter((prevState) => ({
               ...prevState,
@@ -88,6 +86,7 @@ const HKFilters = () => {
           optionLabels={['ON', 'OFF']}
           small
           checked={mapFilter.HK4}
+          disabled={isFetching}
           onChange={() =>
             setMapFilter((prevState) => ({
               ...prevState,

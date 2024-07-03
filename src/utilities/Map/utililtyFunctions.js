@@ -127,8 +127,6 @@ export const calculateFeatInfoHKTotals = (
       acc.totalCarbonCapturedNextYear +=
         parseInt(airTableFeatRowFields.carbon_captured_next_year, 10) || 0;
 
-      acc.standVolumeWMSDensityPerHectareMads +=
-        parseFloat(airTableFeatRowFields.volume_per_hectare_without_bark) || 0;
       acc.standVolumeMads +=
         parseFloat(airTableFeatRowFields.volume_without_bark) || 0;
       acc.avgSpeciesPriceCalculated +=
@@ -153,7 +151,6 @@ export const calculateFeatInfoHKTotals = (
       totalArealM2: 0,
       totalCarbonStored: 0,
       totalCarbonCapturedNextYear: 0,
-      standVolumeWMSDensityPerHectareMads: 0,
       standVolumeMads: 0,
       avgSpeciesPriceCalculated: 0,
       totalBruttoVerdi: 0,
@@ -259,20 +256,22 @@ export const generateHKPopupContent = (
       content += `<td style="padding: 5px; border: 1px solid black;">${corresponsingAirtTableFeature.treslag}</td>`;
       content += `<td style="padding: 5px; border: 1px solid black;">${corresponsingAirtTableFeature.alder}</td>`;
       content += `<td style="padding: 5px; border: 1px solid black;">${convertAndformatTheStringArealM2ToDAA(corresponsingAirtTableFeature.arealm2)}</td>`;
-      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.carbon_stored / 1000, 'nb-NO', 2)}</td>`;
-      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.carbon_captured_next_year / 1000, 'nb-NO', 2)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.carbon_stored) / 1000, 'nb-NO', 2)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.carbon_captured_next_year) / 1000, 'nb-NO', 2)}</td>`;
       content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.volume_per_hectare_without_bark) / 10, 'nb-NO', 1)}</td>`;
-      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.volume_without_bark, 'nb-NO', 1)}</td>`;
-      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.volume_growth_factor * 100, 'nb-NO', 2)}</td>`;
-      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.avg_price_m3, 'nb-NO', 1)}</td>`;
-      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(corresponsingAirtTableFeature.volume_at_maturity_without_bark * corresponsingAirtTableFeature.avg_price_m3, 'nb-NO', 1)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.volume_without_bark), 'nb-NO', 1)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.volume_growth_factor) * 100, 'nb-NO', 2)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.avg_price_m3), 'nb-NO', 1)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black;">${formatNumber(parseFloat(corresponsingAirtTableFeature.volume_at_maturity_without_bark) * parseFloat(corresponsingAirtTableFeature.avg_price_m3), 'nb-NO', 1)}</td>`;
       if (userSpeciesPrices.hogstUtkPrice) {
         content += `
         <td style="padding: 5px; border: 1px solid black;">
           ${formatNumber(
-            corresponsingAirtTableFeature.volume_at_maturity_without_bark *
-              (corresponsingAirtTableFeature.avg_price_m3 -
-                userSpeciesPrices.hogstUtkPrice),
+            parseFloat(
+              corresponsingAirtTableFeature.volume_at_maturity_without_bark
+            ) *
+              (parseFloat(corresponsingAirtTableFeature.avg_price_m3) -
+                parseFloat(userSpeciesPrices.hogstUtkPrice)),
             'nb-NO',
             1
           )}
@@ -290,16 +289,17 @@ export const generateHKPopupContent = (
     content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.arealDAA}</td>`;
     content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.carbon_stored}</td>`;
     content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.carbon_captured_next_year}</td>`;
-    content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(sumObj.standVolumeWMSDensityPerHectareMads / 10, 'nb-NO', 1)}</td>`;
-    content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(sumObj.standVolumeMads, 'nb-NO', 1)}</td>`;
+    content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold"></td>`;
+    content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(parseFloat(sumObj.standVolumeMads), 'nb-NO', 1)}</td>`;
     content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold"></td>`;
     content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold"></td>`;
-    content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(sumObj.totalBruttoVerdi, 'nb-NO', 1)}</td>`;
+    content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(parseFloat(sumObj.totalBruttoVerdi), 'nb-NO', 1)}</td>`;
     if (sumObj.totalNettoVerdi) {
-      content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(sumObj.totalNettoVerdi, 'nb-NO', 1)}</td>`;
+      content += `<td style="padding: 5px; border: 1px solid black; font-weight: bold">${formatNumber(parseFloat(sumObj.totalNettoVerdi), 'nb-NO', 1)}</td>`;
     }
     content += '</tr>';
   } else {
+    // Multi switch is off
     const selectedFeature = selectedFeatures[0];
     const corresponsingAirtTableFeature = airTableBestandFeatInfos.find(
       (featureData) =>
@@ -324,7 +324,7 @@ export const generateHKPopupContent = (
 
     // Calculate arealDAA
     sumObj.arealDAA = convertAndformatTheStringArealM2ToDAA(
-      corresponsingAirtTableFeature.arealm2
+      parseFloat(corresponsingAirtTableFeature.arealm2)
     );
 
     // Get the Alder
@@ -332,21 +332,22 @@ export const generateHKPopupContent = (
 
     // Get the volume_growth_factor
     sumObj.volume_growth_factor = formatNumber(
-      corresponsingAirtTableFeature.volume_growth_factor * 100,
+      parseFloat(corresponsingAirtTableFeature.volume_growth_factor) * 100,
       'nb-NO',
       2
     );
 
     // Get the carbon_stored and convert it to Tonn
     sumObj.carbon_stored = formatNumber(
-      corresponsingAirtTableFeature.carbon_stored / 1000,
+      parseFloat(corresponsingAirtTableFeature.carbon_stored) / 1000,
       'nb-NO',
       2
     );
 
     // Get the carbon_captured_next_year and convert it to Tonn
     sumObj.carbon_captured_next_year = formatNumber(
-      corresponsingAirtTableFeature.carbon_captured_next_year / 1000,
+      parseFloat(corresponsingAirtTableFeature.carbon_captured_next_year) /
+        1000,
       'nb-NO',
       2
     );
@@ -404,25 +405,24 @@ export const generateHKPopupContent = (
           </td>
         </tr>`;
 
-    if (sumObj.standVolumeWMSDensityPerHectareMads) {
-      content += `
+    content += `
             <tr style="border: 1px solid black;">
               <td style="padding: 5px; border: 1px solid black;">Tømmertetthet</td>
               <td style="padding: 5px; display: flex; justify-content: space-between;">
-                <span style="font-weight: bold">${formatNumber(sumObj.standVolumeWMSDensityPerHectareMads / 10, 'nb-NO', 1)}</span>
+                <span style="font-weight: bold">${formatNumber(parseFloat(corresponsingAirtTableFeature.volume_per_hectare_without_bark) / 10, 'nb-NO', 1)}</span>
                 <span>m^3/daa</span>
               </td>
             </tr>`;
-      content += `
+    content += `
             <tr style="border: 1px solid black; background-color: ${rowBGColor}">
               <td style="padding: 5px; border: 1px solid black;">Tømmervolum</td>
               <td style="padding: 5px; display: flex; justify-content: space-between;">
-                <span style="font-weight: bold">${formatNumber(sumObj.standVolumeMads, 'nb-NO', 1)}</span>
+                <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.standVolumeMads), 'nb-NO', 1)}</span>
                 <span>m^3</span>
               </td>
             </tr>`;
-      // Add the volume_growth_factor
-      content += `
+    // Add the volume_growth_factor
+    content += `
             <tr style="border: 1px solid black;">
               <td style="padding: 5px; border: 1px solid black;">Årlig vekst</td>
               <td style="padding: 5px; display: flex; justify-content: space-between;">
@@ -430,33 +430,32 @@ export const generateHKPopupContent = (
                 <span>%</span>
               </td>
             </tr>`;
-      // The price of the timber for a species
-      content += `
+    // The price of the timber for a species
+    content += `
             <tr style="border: 1px solid black; background-color: ${rowBGColor}">
               <td style="padding: 5px; border: 1px solid black; min-width: 150px;">Forv. gj.sn pris per m^3</td>
               <td style="padding: 5px; display: flex; justify-content: space-between;">
-                <span style="font-weight: bold">${formatNumber(sumObj.avgSpeciesPriceCalculated, 'nb-NO', 0)}</span>
+                <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.avgSpeciesPriceCalculated), 'nb-NO', 0)}</span>
                 <span>kr</span>
               </td>
             </tr>`;
-      content += `
+    content += `
             <tr style="border: 1px solid black;">
               <td style="padding: 5px; border: 1px solid black;">Forv. brutto verdi</td>
               <td style="padding: 5px; display: flex; justify-content: space-between;">
-                <span style="font-weight: bold">${formatNumber(sumObj.totalBruttoVerdi, 'nb-NO', 0)}</span>
+                <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.totalBruttoVerdi), 'nb-NO', 0)}</span>
                 <span>kr</span>
               </td>
             </tr>`;
-      if (sumObj.totalNettoVerdi) {
-        content += `
+    if (sumObj.totalNettoVerdi) {
+      content += `
               <tr style="border: 1px solid black; background-color: ${rowBGColor}">
                 <td style="padding: 5px; border: 1px solid black;">Forv. netto verdi</td>
                 <td style="padding: 5px; display: flex; justify-content: space-between;">
-                  <span style="font-weight: bold">${formatNumber(sumObj.totalNettoVerdi, 'nb-NO', 0)}</span>
+                  <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.totalNettoVerdi), 'nb-NO', 0)}</span>
                   <span>kr</span>
                 </td>
               </tr>`;
-      }
     }
   }
 

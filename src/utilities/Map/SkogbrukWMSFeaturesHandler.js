@@ -38,8 +38,6 @@ export const SkogbrukWMSFeaturesHandler = (
     2
   );
   sumObj.arealDAA = convertAndformatTheStringArealM2ToDAA(totals.totalArealM2);
-  sumObj.standVolumeWMSDensityPerHectareMads =
-    totals.standVolumeWMSDensityPerHectareMads;
   sumObj.standVolumeMads = totals.standVolumeMads;
   sumObj.avgSpeciesPriceCalculated = totals.avgSpeciesPriceCalculated;
   sumObj.totalBruttoVerdi = totals.totalBruttoVerdi;
