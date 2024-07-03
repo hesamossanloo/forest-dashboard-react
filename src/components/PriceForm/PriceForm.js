@@ -59,6 +59,7 @@ const PriceForm = () => {
     } else if (!isFetching) {
       setFormData({ ...initialPrices, ...airTablePricesCosts });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFetching, userSpeciesPrices]);
 
   const handleSubmit = async (e) => {
@@ -66,8 +67,18 @@ const PriceForm = () => {
     if (currentUser) {
       try {
         const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, { prices: formData });
-        await updateUserSpeciesPrices(formData);
+        // check if any of the prices are empty and set them to 0
+        const formDataZeros = Object.entries(formData).reduce(
+          (acc, [key, value]) => {
+            return {
+              ...acc,
+              [key]: value === '' ? 0 : value,
+            };
+          },
+          {}
+        );
+        await updateDoc(userDocRef, { prices: formDataZeros });
+        await updateUserSpeciesPrices(formDataZeros);
         setIsSubmitted(true);
         setTimeout(() => setIsSubmitted(false), 1500);
       } catch (error) {
