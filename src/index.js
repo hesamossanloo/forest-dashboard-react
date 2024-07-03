@@ -7,8 +7,8 @@ import PrivacyPolicy from 'components/PrivacyPolicy/PrivacyPolicy';
 import PrivateRoute from 'components/PrivateRoute/PrivateRoute';
 import SignIn from 'components/SignIn/SignIn';
 import SignUp from 'components/SignUp/SignUp';
+import { AirtableProvider } from 'contexts/AirtableContext';
 import { AuthProvider } from 'contexts/AuthContext';
-import { FeatureInfosProvider } from 'contexts/FeatureInfosContext';
 import AdminLayout from 'layouts/Admin/Admin.js';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -26,9 +26,9 @@ root.render(
               path="/admin/*"
               element={
                 <PrivateRoute>
-                  <FeatureInfosProvider>
+                  <AirtableProvider>
                     <AdminLayout />
-                  </FeatureInfosProvider>
+                  </AirtableProvider>
                 </PrivateRoute>
               }
             />

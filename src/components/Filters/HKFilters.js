@@ -1,5 +1,5 @@
 import ToggleSwitch from 'components/ToggleSwitch/ToggleSwitch';
-import { FeatureInfosContext } from 'contexts/FeatureInfosContext';
+import { AirtableContext } from 'contexts/AirtableContext';
 import { MapFilterContext } from 'contexts/MapFilterContext';
 import { useContext, useEffect, useState } from 'react';
 import { Label } from 'reactstrap';
@@ -14,7 +14,7 @@ const HKFilters = () => {
   const [mapFilter, setMapFilter] = useContext(MapFilterContext);
   const [volume, setVolume] = useState(0);
   const [ESTGrossValue, setESTGrossValue] = useState(0);
-  const { airTableBestandInfos, isFetching } = useContext(FeatureInfosContext);
+  const { airTableBestandInfos, isFetching } = useContext(AirtableContext);
 
   // On HK5 change, go through the featureInfosData and find the rows where the hogstkl_verdi is 5
   // Then, get the sum of the values under the column Volume
