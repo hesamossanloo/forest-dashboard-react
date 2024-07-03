@@ -1,10 +1,13 @@
 import ToggleSwitch from 'components/ToggleSwitch/ToggleSwitch';
-import { AirtableContext } from 'contexts/AirtableContext';
+import { useAirtable } from 'contexts/AirtableContext';
+import { useAuth } from 'contexts/AuthContext';
 import { MapFilterContext } from 'contexts/MapFilterContext';
 import { useContext, useEffect, useState } from 'react';
 import { Label } from 'reactstrap';
-import { formatNumber } from 'utilities/Map/utililtyFunctions';
-import { SPECIES_PRICES } from 'variables/forest';
+import {
+  calculateAvgPrice,
+  formatNumber,
+} from 'utilities/Map/utililtyFunctions';
 
 const labelStyle = {
   fontSize: '0.80rem',
@@ -14,7 +17,8 @@ const HKFilters = () => {
   const [mapFilter, setMapFilter] = useContext(MapFilterContext);
   const [volume, setVolume] = useState(0);
   const [ESTGrossValue, setESTGrossValue] = useState(0);
-  const { airTableBestandInfos, isFetching } = useContext(AirtableContext);
+  const { airTableBestandInfos, isFetching } = useAirtable();
+  const { userSpeciesPrices } = useAuth();
 
   // On HK5 change, go through the featureInfosData and find the rows where the hogstkl_verdi is 5
   // Then, get the sum of the values under the column Volume
@@ -24,24 +28,14 @@ const HKFilters = () => {
     airTableBestandInfos.forEach((row) => {
       const rowFields = row.fields;
       const rowV = parseFloat(rowFields.volume) || 0;
+      rowFields.avg_price_m3 = calculateAvgPrice(rowFields, userSpeciesPrices);
       if (mapFilter.HK5 && rowFields.hogstkl_verdi === 5) {
         sumV += rowV;
-
-        if (rowFields.treslag === 'Bjørk / lauv') {
-          sumWorth += rowV * (SPECIES_PRICES.LAU || 0);
-        } else {
-          sumWorth +=
-            rowV * (SPECIES_PRICES[rowFields.treslag.toUpperCase()] || 0);
-        }
+        sumWorth += rowV * (rowFields.avg_price_m3 || 0);
       }
       if (mapFilter.HK4 && rowFields.hogstkl_verdi === 4) {
         sumV += rowV;
-        if (rowFields.treslag === 'Bjørk / lauv') {
-          sumWorth += rowV * (SPECIES_PRICES.LAU || 0);
-        } else {
-          sumWorth +=
-            rowV * (SPECIES_PRICES[rowFields.treslag.toUpperCase()] || 0);
-        }
+        sumWorth += rowV * (rowFields.avg_price_m3 || 0);
       }
     });
     return [sumV, sumWorth];

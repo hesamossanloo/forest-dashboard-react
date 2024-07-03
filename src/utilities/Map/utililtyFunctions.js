@@ -115,35 +115,35 @@ export const calculateFeatInfoHKTotals = (
           (row) => row.fields.bestand_id === props.teig_best_nr
         ) || {};
 
-      const airTableRowFields = foundRow.fields;
+      const airTableFeatRowFields = foundRow.fields;
       // If user has provided prices, the new price values will override th old ones
-      airTableRowFields.avg_price_m3 = calculateAvgPrice(
-        airTableRowFields,
+      airTableFeatRowFields.avg_price_m3 = calculateAvgPrice(
+        airTableFeatRowFields,
         userSpeciesPrices
       );
-      acc.totalArealM2 += parseInt(airTableRowFields.arealm2, 10) || 0;
+      acc.totalArealM2 += parseInt(airTableFeatRowFields.arealm2, 10) || 0;
       acc.totalCarbonStored +=
-        parseInt(airTableRowFields.carbon_stored, 10) || 0;
+        parseInt(airTableFeatRowFields.carbon_stored, 10) || 0;
       acc.totalCarbonCapturedNextYear +=
-        parseInt(airTableRowFields.carbon_captured_next_year, 10) || 0;
+        parseInt(airTableFeatRowFields.carbon_captured_next_year, 10) || 0;
 
       acc.standVolumeWMSDensityPerHectareMads +=
-        parseFloat(airTableRowFields.volume_per_hectare_without_bark) || 0;
+        parseFloat(airTableFeatRowFields.volume_per_hectare_without_bark) || 0;
       acc.standVolumeMads +=
-        parseFloat(airTableRowFields.volume_without_bark) || 0;
+        parseFloat(airTableFeatRowFields.volume_without_bark) || 0;
       acc.avgSpeciesPriceCalculated +=
-        parseFloat(airTableRowFields.avg_price_m3) || 0;
+        parseFloat(airTableFeatRowFields.avg_price_m3) || 0;
       // from https://trello.com/c/RTkPLbFf/330-let-forester-provide-input-prices-and-logging-costs
       // To calculate gross values: (Forv. Brutto Verdi): volume_at_maturity_without_bark * avg_price;
       acc.totalBruttoVerdi +=
-        parseFloat(airTableRowFields.volume_at_maturity_without_bark) *
-          parseFloat(airTableRowFields.avg_price_m3) || 0;
+        parseFloat(airTableFeatRowFields.volume_at_maturity_without_bark) *
+          parseFloat(airTableFeatRowFields.avg_price_m3) || 0;
       // from https://trello.com/c/RTkPLbFf/330-let-forester-provide-input-prices-and-logging-costs
       // totalNettoVerdi = Forv. Brutto Verdi - volume_at_maturity_without_bark * hogst&utkjøring_cost_per_m3
       if (userSpeciesPrices.hogstUtkPrice) {
         acc.totalNettoVerdi +=
-          parseFloat(airTableRowFields.volume_at_maturity_without_bark) *
-            (parseFloat(airTableRowFields.avg_price_m3) -
+          parseFloat(airTableFeatRowFields.volume_at_maturity_without_bark) *
+            (parseFloat(airTableFeatRowFields.avg_price_m3) -
               parseFloat(userSpeciesPrices.hogstUtkPrice)) || 0;
       }
 
