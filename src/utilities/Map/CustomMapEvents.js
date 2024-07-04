@@ -54,7 +54,8 @@ export default function CustomMapEvents(props) {
   } = props;
   const map = useMap();
   const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const { airTableBestandInfos, isFetching, airTableTooltips } = useAirtable();
+  const { airTableBestandInfos, isFetchingAirtableRecords, airTableTooltips } =
+    useAirtable();
   const { userSpeciesPrices } = useAuth();
 
   // Check if the click is within the coordinates of a GeoJSON
@@ -181,7 +182,7 @@ export default function CustomMapEvents(props) {
           // Reset selected features if not in multiPolygonSelect mode
           if (!multiPolygonSelect) {
             setSelectedFeatures([selectedVectorFeatureRef.current]); // Only the last selected feature is kept
-            if (!isFetching) {
+            if (!isFetchingAirtableRecords && airTableBestandInfos.length > 0) {
               // Ensure data is loaded
               SkogbrukWMSFeaturesHandler(
                 e,
@@ -210,7 +211,7 @@ export default function CustomMapEvents(props) {
                 ...selectedFeatures,
                 selectedVectorFeatureRef.current,
               ]);
-              if (!isFetching) {
+              if (!isFetchingAirtableRecords) {
                 SkogbrukWMSFeaturesHandler(
                   e,
                   selectedFeatures.concat([selectedVectorFeatureRef.current]),
@@ -232,7 +233,10 @@ export default function CustomMapEvents(props) {
                   selectedVectorFeatureRef.current.properties?.teig_best_nr
               );
               setSelectedFeatures(newSelectedFeatures);
-              if ((newSelectedFeatures.length > 0) & !isFetching) {
+              if (
+                (newSelectedFeatures.length > 0) &
+                !isFetchingAirtableRecords
+              ) {
                 SkogbrukWMSFeaturesHandler(
                   e,
                   newSelectedFeatures,

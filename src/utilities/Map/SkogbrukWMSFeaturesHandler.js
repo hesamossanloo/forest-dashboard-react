@@ -52,6 +52,7 @@ export const SkogbrukWMSFeaturesHandler = (
     airTableTooltips,
     userSpeciesPrices
   );
+
   let popupContentDiv = document.createElement('div');
   popupContentDiv.className = 'mis-popup-content';
   popupContentDiv.innerHTML = content;

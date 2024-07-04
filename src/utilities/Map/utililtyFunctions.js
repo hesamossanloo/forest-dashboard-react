@@ -165,51 +165,55 @@ export const calculateAvgPrice = (
   corresponsingAirtTableFeature,
   userSpeciesPrices
 ) => {
-  let avgPrice = 0;
-  switch (corresponsingAirtTableFeature.treslag) {
-    case SPECIES.GRAN:
-      // from https://trello.com/c/RTkPLbFf/330-let-forester-provide-input-prices-and-logging-costs
-      // avg_price = saw_wood_portion * price_saw_wood + (1 - saw_wood_portion) * price_pulp_wood;
-      if (
-        userSpeciesPrices.granSagtommerPrice &&
-        userSpeciesPrices.granMassevirkePrice
-      ) {
-        avgPrice =
-          parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
-            parseFloat(userSpeciesPrices.granSagtommerPrice) +
-          (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
-            parseFloat(userSpeciesPrices.granMassevirkePrice);
-      }
-      break;
-    case SPECIES.FURU:
-      if (
-        userSpeciesPrices.furuSagtommerPrice &&
-        userSpeciesPrices.furuMassevirkePrice
-      ) {
-        avgPrice =
-          parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
-            parseFloat(userSpeciesPrices.furuSagtommerPrice) +
-          (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
-            parseFloat(userSpeciesPrices.furuMassevirkePrice);
-      }
-      break;
-    case SPECIES.LAU:
-      if (
-        userSpeciesPrices.lauvSagtommerPrice &&
-        userSpeciesPrices.lauvMassevirkePrice
-      ) {
-        avgPrice =
-          parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
-            parseFloat(userSpeciesPrices.lauvSagtommerPrice) +
-          (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
-            parseFloat(userSpeciesPrices.lauvMassevirkePrice);
-      }
-      break;
-    default:
-      avgPrice = 0;
-      break;
+  if (corresponsingAirtTableFeature && corresponsingAirtTableFeature.treslag) {
+    let avgPrice = 0;
+    switch (corresponsingAirtTableFeature.treslag) {
+      case SPECIES.GRAN:
+        // from https://trello.com/c/RTkPLbFf/330-let-forester-provide-input-prices-and-logging-costs
+        // avg_price = saw_wood_portion * price_saw_wood + (1 - saw_wood_portion) * price_pulp_wood;
+        if (
+          userSpeciesPrices.granSagtommerPrice &&
+          userSpeciesPrices.granMassevirkePrice
+        ) {
+          avgPrice =
+            parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
+              parseFloat(userSpeciesPrices.granSagtommerPrice) +
+            (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
+              parseFloat(userSpeciesPrices.granMassevirkePrice);
+        }
+        break;
+      case SPECIES.FURU:
+        if (
+          userSpeciesPrices.furuSagtommerPrice &&
+          userSpeciesPrices.furuMassevirkePrice
+        ) {
+          avgPrice =
+            parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
+              parseFloat(userSpeciesPrices.furuSagtommerPrice) +
+            (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
+              parseFloat(userSpeciesPrices.furuMassevirkePrice);
+        }
+        break;
+      case SPECIES.LAU:
+        if (
+          userSpeciesPrices.lauvSagtommerPrice &&
+          userSpeciesPrices.lauvMassevirkePrice
+        ) {
+          avgPrice =
+            parseFloat(corresponsingAirtTableFeature.saw_wood_portion) *
+              parseFloat(userSpeciesPrices.lauvSagtommerPrice) +
+            (1 - parseFloat(corresponsingAirtTableFeature.saw_wood_portion)) *
+              parseFloat(userSpeciesPrices.lauvMassevirkePrice);
+        }
+        break;
+      default:
+        avgPrice = 0;
+        break;
+    }
+    return avgPrice;
+  } else {
+    return 0;
   }
-  return avgPrice;
 };
 export const generateHKPopupContent = (
   sumObj,

@@ -49,18 +49,22 @@ const PriceForm = () => {
     updateUserSpeciesPrices,
     loading: authLoading,
   } = useAuth();
-  const { airTablePricesCosts, isFetching, airTableTooltips } = useAirtable();
+  const { airTablePricesCosts, isFetchingAirtableRecords, airTableTooltips } =
+    useAirtable();
   const [formData, setFormData] = useState(initialPrices);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    if (!isFetching && userSpeciesPrices.granSagtommerPrice !== '') {
+    if (
+      !isFetchingAirtableRecords &&
+      userSpeciesPrices.granSagtommerPrice !== ''
+    ) {
       setFormData({ ...initialPrices, ...userSpeciesPrices });
-    } else if (!isFetching) {
+    } else if (!isFetchingAirtableRecords) {
       setFormData({ ...initialPrices, ...airTablePricesCosts });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFetching, userSpeciesPrices]);
+  }, [isFetchingAirtableRecords, userSpeciesPrices]);
 
   // define the tommerPriserTT and driftskostnadTT objects as const and get them from the airTableTooltips.fields.
   // where the Technical_key is equal to tommerPriserTT or driftskostnadTT
@@ -120,7 +124,7 @@ const PriceForm = () => {
     }));
   };
 
-  if (authLoading || isFetching) {
+  if (authLoading || isFetchingAirtableRecords) {
     return <div>Loading...</div>;
   }
   return (

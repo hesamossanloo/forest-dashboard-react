@@ -17,34 +17,27 @@ const AirtableProvider = ({ children }) => {
   const [airTableBestandInfos, setAirTableBestandInfos] = useState([]);
   const [airTablePricesCosts, setAirTablePricesCosts] = useState([]);
   const [airTableTooltips, setAirTableTooltips] = useState([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const [isFetchingAirtableRecords, setIsFetchingAirtableRecords] =
+    useState(true);
 
   useEffect(() => {
-    // Fetch Airtable Bestandsdata
     const getBestandRecords = async () => {
-      setIsFetching(true);
       try {
         const records = await fetchBestandRecords();
         setAirTableBestandInfos(records);
       } catch (error) {
         console.error('Error fetching Bestand records:', error);
-      } finally {
-        setIsFetching(false);
       }
     };
     const getTooltipsRecords = async () => {
-      setIsFetching(true);
       try {
         const records = await fetchTooltipsRecords();
         setAirTableTooltips(records);
       } catch (error) {
         console.error('Error fetching Tooltips records:', error);
-      } finally {
-        setIsFetching(false);
       }
     };
     const getPricesRecords = async () => {
-      setIsFetching(true);
       try {
         const records = await fetchPricesRecords();
         // map the records to this format const initialPrices = {
@@ -74,13 +67,13 @@ const AirtableProvider = ({ children }) => {
         setAirTablePricesCosts(prices);
       } catch (error) {
         console.error('Error fetching Prices records:', error);
-      } finally {
-        setIsFetching(false);
       }
     };
+    setIsFetchingAirtableRecords(true);
     getPricesRecords();
     getBestandRecords();
     getTooltipsRecords();
+    setIsFetchingAirtableRecords(false);
   }, []);
 
   return (
@@ -89,7 +82,7 @@ const AirtableProvider = ({ children }) => {
         airTableBestandInfos,
         airTablePricesCosts,
         airTableTooltips,
-        isFetching,
+        isFetchingAirtableRecords,
       }}
     >
       {children}
