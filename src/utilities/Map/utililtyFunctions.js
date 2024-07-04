@@ -211,19 +211,169 @@ export const calculateAvgPrice = (
   }
   return avgPrice;
 };
-
 export const generateHKPopupContent = (
   sumObj,
   selectedFeatures,
   multiSwitchOn,
   airTableBestandFeatInfos,
+  airTableTooltips,
   userSpeciesPrices
 ) => {
+  // Add tooltip listeners after the popup is added to the DOM
+
+  const bestand_idTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'bestand_id'
+  );
+  const hogstkl_verdiTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'hogstkl_verdi'
+  );
+  const bonitetTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'bonitet'
+  );
+  const trelagTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'trelag'
+  );
+  const arealTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'areal'
+  );
+  const alderTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'alder'
+  );
+  const carbon_storedTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'carbon_stored'
+  );
+  const carbon_captured_next_yearTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'carbon_captured_next_year'
+  );
+  const volume_per_hectare_without_barkTT = airTableTooltips.find(
+    (tooltip) =>
+      tooltip.fields.Technical_key === 'volume_per_hectare_without_bark'
+  );
+  const volume_without_barkTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'volume_without_bark'
+  );
+  const volume_growth_factorTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'volume_growth_factor'
+  );
+  const avg_price_m3TT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'avg_price_m3'
+  );
+  const bruttoTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'brutto'
+  );
+  const nettoTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'netto'
+  );
   let content =
     `<h3 style="color: black; text-align: center;">${sumObj.title}</h3>` +
     '<table style="margin-bottom: 10px; border-collapse: collapse; border: 1px solid black;">';
 
   if (multiSwitchOn) {
+    // Add the tooltips row
+    content += `<tr>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${bestand_idTT?.fields && bestand_idTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+     <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${hogstkl_verdiTT?.fields && hogstkl_verdiTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${bonitetTT?.fields && bonitetTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${trelagTT?.fields && trelagTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${alderTT?.fields && alderTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${arealTT?.fields && arealTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${carbon_storedTT?.fields && carbon_storedTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${carbon_captured_next_yearTT?.fields && carbon_captured_next_yearTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${volume_per_hectare_without_barkTT?.fields && volume_per_hectare_without_barkTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${volume_without_barkTT?.fields && volume_without_barkTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${volume_growth_factorTT?.fields && volume_growth_factorTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${avg_price_m3TT?.fields && avg_price_m3TT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${bruttoTT?.fields && bruttoTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
+      ${
+        userSpeciesPrices.hogstUtkPrice
+          ? `<td style="padding: 5px; border: 1px solid black; text-align: center;">
+              <span style="padding: 5px; background-color: transparent; text-align: center;">
+                <span class="info-icon" data-tooltip="${nettoTT?.fields && nettoTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                  i
+                </span>
+              </span>
+            </td>`
+          : ''
+      }
+    </tr>`;
     content += '<tr>';
     Object.values(desiredFeatInfoAttrHKLayerWithUnits).forEach((attr) => {
       content += `<th style="padding: 5px; border: 1px solid black;">${attr}</th>`;
@@ -234,7 +384,11 @@ export const generateHKPopupContent = (
       <th style="padding: 5px; border: 1px solid black;">Årlig vekst (%)</th>
       <th style="padding: 5px; border: 1px solid black; min-width: 150px;">Forv. gj.sn pris per m^3 (kr)</th>
       <th style="padding: 5px; border: 1px solid black;">Forv. brutto verdi (kr)</th>
-      ${userSpeciesPrices.hogstUtkPrice ? `<th style="padding: 5px; border: 1px solid black;">Forv. netto verdi (kr)</th>` : ''}
+      ${
+        userSpeciesPrices.hogstUtkPrice
+          ? `<th style="padding: 5px; border: 1px solid black;">Forv. netto verdi (kr)</th>`
+          : ''
+      }
     </tr>`;
 
     selectedFeatures.forEach((feature) => {
@@ -462,6 +616,49 @@ export const generateHKPopupContent = (
   content += '</table>';
   return content;
 };
+// Function to add tooltip event listeners
+function addPopupTooltipListeners() {
+  document.querySelectorAll('.info-icon').forEach(function (icon) {
+    icon.addEventListener('click', function () {
+      let existingTooltip = document.querySelector('.custom-tooltip');
+      if (existingTooltip) {
+        existingTooltip.remove();
+        if (
+          existingTooltip.getAttribute('data-for') ===
+          this.getAttribute('data-tooltip')
+        ) {
+          return;
+        }
+      }
+
+      const tooltipText = this.getAttribute('data-tooltip');
+      const tooltipElement = document.createElement('div');
+      tooltipElement.className = 'custom-tooltip';
+      tooltipElement.setAttribute(
+        'data-for',
+        this.getAttribute('data-tooltip')
+      );
+      tooltipElement.style.position = 'absolute';
+      tooltipElement.style.backgroundColor = 'white';
+      tooltipElement.style.border = '1px solid black';
+      tooltipElement.style.padding = '0.25rem 0.5rem';
+      tooltipElement.style.zIndex = '1000';
+      tooltipElement.style.color = '#222a42';
+      tooltipElement.style.borderRadius = '0.25rem';
+      tooltipElement.innerText = tooltipText;
+
+      document.body.appendChild(tooltipElement);
+
+      const rect = this.getBoundingClientRect();
+      tooltipElement.style.top = `${rect.bottom + window.scrollY + 5}px`;
+      tooltipElement.style.left = `${rect.left + window.scrollX}px`;
+
+      setTimeout(() => {
+        tooltipElement.remove();
+      }, 3000); // Remove tooltip after 3 seconds
+    });
+  });
+}
 
 export const openHKPopupWithContent = (content, e, map) => {
   const popup = L.popup({
@@ -477,6 +674,7 @@ export const openHKPopupWithContent = (content, e, map) => {
   const popupContainer = popup.getElement();
   popupContainer.style.width = 'auto';
   popupContainer.style.height = 'auto';
+  addPopupTooltipListeners();
 };
 
 export const createMISButton = (MISConetntDiv, MISFeature, e, map) => {

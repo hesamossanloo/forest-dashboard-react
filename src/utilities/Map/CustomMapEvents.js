@@ -54,7 +54,7 @@ export default function CustomMapEvents(props) {
   } = props;
   const map = useMap();
   const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const { airTableBestandInfos, isFetching } = useAirtable();
+  const { airTableBestandInfos, isFetching, airTableTooltips } = useAirtable();
   const { userSpeciesPrices } = useAuth();
 
   // Check if the click is within the coordinates of a GeoJSON
@@ -190,6 +190,7 @@ export default function CustomMapEvents(props) {
                 multiPolygonSelect,
                 MISClickedFeatureInfos,
                 airTableBestandInfos,
+                airTableTooltips,
                 userSpeciesPrices
               );
             }
@@ -217,6 +218,7 @@ export default function CustomMapEvents(props) {
                   multiPolygonSelect,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
+                  airTableTooltips,
                   userSpeciesPrices
                 );
               }
@@ -238,6 +240,7 @@ export default function CustomMapEvents(props) {
                   multiPolygonSelect,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
+                  airTableTooltips,
                   userSpeciesPrices
                 );
               }

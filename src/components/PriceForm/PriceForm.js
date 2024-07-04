@@ -49,7 +49,7 @@ const PriceForm = () => {
     updateUserSpeciesPrices,
     loading: authLoading,
   } = useAuth();
-  const { airTablePricesCosts, isFetching } = useAirtable();
+  const { airTablePricesCosts, isFetching, airTableTooltips } = useAirtable();
   const [formData, setFormData] = useState(initialPrices);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -62,6 +62,14 @@ const PriceForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFetching, userSpeciesPrices]);
 
+  // define the tommerPriserTT and driftskostnadTT objects as const and get them from the airTableTooltips.fields.
+  // where the Technical_key is equal to tommerPriserTT or driftskostnadTT
+  const tommerPriserTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'tommerPriserTT'
+  );
+  const driftskostnadTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'driftskostnadTT'
+  );
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (currentUser) {
@@ -131,15 +139,12 @@ const PriceForm = () => {
           />
           <UncontrolledTooltip target="tommerPriserTT" delay={0}>
             <u>
-              <b>Tømmerpriser:</b>
+              <b>{tommerPriserTT?.fields && tommerPriserTT.fields.Label}:</b>
             </u>
             <span>
               <br />
             </span>
-            Her kan du skrive inn dine egne estimater på tømmerpris og
-            driftskostnader per kubikkmeter. Prisene som fremkommer i
-            utgangspunktet er basert på gjennomsnittspriser av solgt virke
-            forrige måned.
+            {tommerPriserTT?.fields && tommerPriserTT.fields.Tooltip}
           </UncontrolledTooltip>
           <FormGroup>
             <Label for="granSagtommerPrice">Gran - Sagtømmer</Label>
@@ -209,14 +214,14 @@ const PriceForm = () => {
             />
             <UncontrolledTooltip target="driftskostnadTT" delay={0}>
               <u>
-                <b>Driftskostnad:</b>
+                <b>
+                  {driftskostnadTT?.fields && driftskostnadTT.fields.Label}:
+                </b>
               </u>
               <span>
                 <br />
               </span>
-              Du kan også oppgi estimert driftskostnad per kubikkmeter. Da kan
-              vi regne på nettoverdier. Per nå tar vi ikke hensyn til faste
-              kostnader som oppstart og flytt mv.
+              {driftskostnadTT?.fields && driftskostnadTT.fields.Tooltip}
             </UncontrolledTooltip>
             <Label for="hogstUtkPrice">Hogst & utkjøring Per m^3:</Label>
             <Input
