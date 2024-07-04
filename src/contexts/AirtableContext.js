@@ -1,7 +1,11 @@
 // src/RecordsContext.js
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { fetchBestandRecords, fetchPricesRecords } from '../services/airtable';
+import {
+  fetchBestandRecords,
+  fetchPricesRecords,
+  fetchTooltipsRecords,
+} from '../services/airtable';
 
 const AirtableContext = createContext();
 export const useAirtable = () => useContext(AirtableContext);
@@ -12,23 +16,28 @@ const AirtableProvider = ({ children }) => {
   };
   const [airTableBestandInfos, setAirTableBestandInfos] = useState([]);
   const [airTablePricesCosts, setAirTablePricesCosts] = useState([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const [airTableTooltips, setAirTableTooltips] = useState([]);
+  const [isFetchingAirtableRecords, setIsFetchingAirtableRecords] =
+    useState(true);
 
   useEffect(() => {
-    // Fetch Airtable Bestandsdata
     const getBestandRecords = async () => {
-      setIsFetching(true);
       try {
         const records = await fetchBestandRecords();
         setAirTableBestandInfos(records);
       } catch (error) {
-        console.error('Error fetching records:', error);
-      } finally {
-        setIsFetching(false);
+        console.error('Error fetching Bestand records:', error);
+      }
+    };
+    const getTooltipsRecords = async () => {
+      try {
+        const records = await fetchTooltipsRecords();
+        setAirTableTooltips(records);
+      } catch (error) {
+        console.error('Error fetching Tooltips records:', error);
       }
     };
     const getPricesRecords = async () => {
-      setIsFetching(true);
       try {
         const records = await fetchPricesRecords();
         // map the records to this format const initialPrices = {
@@ -57,13 +66,14 @@ const AirtableProvider = ({ children }) => {
 
         setAirTablePricesCosts(prices);
       } catch (error) {
-        console.error('Error fetching records:', error);
-      } finally {
-        setIsFetching(false);
+        console.error('Error fetching Prices records:', error);
       }
     };
+    setIsFetchingAirtableRecords(true);
     getPricesRecords();
     getBestandRecords();
+    getTooltipsRecords();
+    setIsFetchingAirtableRecords(false);
   }, []);
 
   return (
@@ -71,7 +81,8 @@ const AirtableProvider = ({ children }) => {
       value={{
         airTableBestandInfos,
         airTablePricesCosts,
-        isFetching,
+        airTableTooltips,
+        isFetchingAirtableRecords,
       }}
     >
       {children}

@@ -17,11 +17,9 @@ const HKFilters = () => {
   const [mapFilter, setMapFilter] = useContext(MapFilterContext);
   const [volume, setVolume] = useState(0);
   const [ESTGrossValue, setESTGrossValue] = useState(0);
-  const { airTableBestandInfos, isFetching } = useAirtable();
+  const { airTableBestandInfos, isFetchingAirtableRecords } = useAirtable();
   const { userSpeciesPrices } = useAuth();
 
-  // On HK5 change, go through the featureInfosData and find the rows where the hogstkl_verdi is 5
-  // Then, get the sum of the values under the column Volume
   const calculateVolume = () => {
     let sumV = 0;
     let sumWorth = 0;
@@ -41,13 +39,18 @@ const HKFilters = () => {
     return [sumV, sumWorth];
   };
 
-  // whenever the mapFilter.HK5 changes, update the mapFilter.V
   useEffect(() => {
     const [sumV, sumWorth] = calculateVolume();
     setVolume(sumV);
     setESTGrossValue(sumWorth);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapFilter, isFetching]);
+  }, [mapFilter, isFetchingAirtableRecords]);
+
+  // Show loading indicator when fetching records
+  if (isFetchingAirtableRecords) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       {/* HK5 */}
@@ -63,7 +66,7 @@ const HKFilters = () => {
           optionLabels={['ON', 'OFF']}
           small
           checked={mapFilter.HK5}
-          disabled={isFetching}
+          disabled={isFetchingAirtableRecords}
           onChange={() =>
             setMapFilter((prevState) => ({
               ...prevState,
@@ -86,7 +89,7 @@ const HKFilters = () => {
           optionLabels={['ON', 'OFF']}
           small
           checked={mapFilter.HK4}
-          disabled={isFetching}
+          disabled={isFetchingAirtableRecords}
           onChange={() =>
             setMapFilter((prevState) => ({
               ...prevState,
@@ -131,47 +134,6 @@ const HKFilters = () => {
           {formatNumber(Math.ceil(ESTGrossValue), 'nb-NO', 0)} kr
         </Label>
       </div>
-      {/* <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: 30,
-              }}
-            >
-              <Label style={labelStyle}>
-                <u>Species Prices</u>
-              </Label>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: 10,
-              }}
-            >
-              <Label style={labelStyle}>{SPECIES.GRAN}</Label>
-              <Label style={labelStyle}>{SPECIES_PRICES.GRAN} kr</Label>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: 10,
-              }}
-            >
-              <Label style={labelStyle}>{SPECIES.FURU}</Label>
-              <Label style={labelStyle}>{SPECIES_PRICES.FURU} kr</Label>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginTop: 10,
-              }}
-            >
-              <Label style={labelStyle}>{SPECIES.LAU}</Label>
-              <Label style={labelStyle}>{SPECIES_PRICES.LAU} kr</Label>
-            </div> */}
     </>
   );
 };

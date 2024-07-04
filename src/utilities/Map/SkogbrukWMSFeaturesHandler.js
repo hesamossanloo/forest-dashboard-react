@@ -14,6 +14,7 @@ export const SkogbrukWMSFeaturesHandler = (
   multi,
   MISFeature,
   airTableBestandFeatInfos,
+  airTableTooltips,
   userSpeciesPrices
 ) => {
   const sumObj = {
@@ -48,8 +49,10 @@ export const SkogbrukWMSFeaturesHandler = (
     selectedFeatures,
     multi,
     airTableBestandFeatInfos,
+    airTableTooltips,
     userSpeciesPrices
   );
+
   let popupContentDiv = document.createElement('div');
   popupContentDiv.className = 'mis-popup-content';
   popupContentDiv.innerHTML = content;
