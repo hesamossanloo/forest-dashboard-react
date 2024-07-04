@@ -237,11 +237,11 @@ export const generateHKPopupContent = (
   const trelagTT = airTableTooltips.find(
     (tooltip) => tooltip.fields.Technical_key === 'trelag'
   );
-  const arealTT = airTableTooltips.find(
-    (tooltip) => tooltip.fields.Technical_key === 'areal'
-  );
   const alderTT = airTableTooltips.find(
     (tooltip) => tooltip.fields.Technical_key === 'alder'
+  );
+  const arealTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'areal'
   );
   const carbon_storedTT = airTableTooltips.find(
     (tooltip) => tooltip.fields.Technical_key === 'carbon_stored'
@@ -515,24 +515,52 @@ export const generateHKPopupContent = (
     content +=
       // Add the ID row
       `<tr style="border: 1px solid black;">
-          <td style="padding: 5px; border: 1px solid black;">ID</td>
-          <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.bestand_id}</td>
-        </tr>` +
+        <td style="padding: 5px; border: 1px solid black;">ID</td>
+        <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.bestand_id}</td>
+        <td style="padding: 5px; border: 1px solid black; text-align: center;">
+          <span style="padding: 5px; background-color: transparent; text-align: center;">
+            <span class="info-icon" data-tooltip="${bestand_idTT?.fields && bestand_idTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+              i
+            </span>
+          </span>
+        </td>
+      </tr>` +
       // Add Hogstklasse
       `<tr style="border: 1px solid black; background-color: ${rowBGColor}">
-          <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['hogstkl_verdi']}</td>
-          <td style="padding: 5px; border: 1px solid black; font-weight: bold;">${sumObj.hogstkl_verdi}</td>
-        </tr>` +
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['hogstkl_verdi']}</td>
+        <td style="padding: 5px; border: 1px solid black; font-weight: bold;">${sumObj.hogstkl_verdi}</td>
+        <td style="padding: 5px; border: 1px solid black; text-align: center;">
+          <span style="padding: 5px; background-color: transparent; text-align: center;">
+            <span class="info-icon" data-tooltip="${hogstkl_verdiTT?.fields && hogstkl_verdiTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+              i
+            </span>
+          </span>
+        </td>
+      </tr>` +
       // Add Bonitet
       `<tr style="border: 1px solid black;">
-          <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bonitet_beskrivelse']}</td>
-          <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.bonitet}</td>
-        </tr>` +
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bonitet_beskrivelse']}</td>
+        <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.bonitet}</td>
+        <td style="padding: 5px; border: 1px solid black; text-align: center;">
+          <span style="padding: 5px; background-color: transparent; text-align: center;">
+            <span class="info-icon" data-tooltip="${bonitetTT?.fields && bonitetTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+              i
+            </span>
+          </span>
+        </td>
+      </tr>` +
       // Add the Treslag
       `<tr style="border: 1px solid black; background-color: ${rowBGColor}">
-          <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bontre_beskrivelse']}</td>
-          <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.treslag}</td>
-        </tr>` +
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bontre_beskrivelse']}</td>
+        <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.treslag}</td>
+        <td style="padding: 5px; border: 1px solid black; text-align: center;">
+          <span style="padding: 5px; background-color: transparent; text-align: center;">
+            <span class="info-icon" data-tooltip="${trelagTT?.fields && trelagTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+              i
+            </span>
+          </span>
+        </td>
+      </tr>` +
       // Add the ArealM2
       `<tr style="border: 1px solid black;">
           <td style="padding: 5px; border: 1px solid black; min-width: 110px">${desiredFeatInfoAttrHKLayer['arealDAA']}</td>
@@ -540,11 +568,25 @@ export const generateHKPopupContent = (
             <span style="font-weight: bold">${sumObj.arealDAA}</span>
             <span>daa</span>
           </td>
+          <td style="padding: 5px; border: 1px solid black; text-align: center;">
+            <span style="padding: 5px; background-color: transparent; text-align: center;">
+              <span class="info-icon" data-tooltip="${arealTT?.fields && arealTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                i
+              </span>
+            </span>
+          </td>
         </tr>` +
       // Add the Alder
       `<tr style="border: 1px solid black; background-color: ${rowBGColor}">
           <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['alder']}</td>
           <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.alder}</td>
+          <td style="padding: 5px; border: 1px solid black; text-align: center;">
+            <span style="padding: 5px; background-color: transparent; text-align: center;">
+              <span class="info-icon" data-tooltip="${alderTT?.fields && alderTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                i
+              </span>
+            </span>
+          </td>
         </tr>` +
       // Add the carbon_stored
       `<tr style="border: 1px solid black;">
@@ -552,6 +594,13 @@ export const generateHKPopupContent = (
             <td style="padding: 5px; display: flex; justify-content: space-between;">
               <span style="font-weight: bold">${sumObj.carbon_stored}</span>
               <span>T</span>
+            </td>
+            <td style="padding: 5px; border: 1px solid black; text-align: center;">
+              <span style="padding: 5px; background-color: transparent; text-align: center;">
+                <span class="info-icon" data-tooltip="${carbon_storedTT?.fields && carbon_storedTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                  i
+                </span>
+              </span>
             </td>
         </tr>` +
       // Add the carbon_captured_next_year
@@ -561,14 +610,27 @@ export const generateHKPopupContent = (
             <span style="font-weight: bold">${sumObj.carbon_captured_next_year}</span>
             <span>T</span>
           </td>
+          <td style="padding: 5px; border: 1px solid black; text-align: center;">
+              <span style="padding: 5px; background-color: transparent; text-align: center;">
+                <span class="info-icon" data-tooltip="${carbon_captured_next_yearTT?.fields && carbon_captured_next_yearTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                  i
+                </span>
+              </span>
+            </td>
         </tr>`;
-
     content += `
             <tr style="border: 1px solid black;">
               <td style="padding: 5px; border: 1px solid black;">Tømmertetthet</td>
               <td style="padding: 5px; display: flex; justify-content: space-between;">
                 <span style="font-weight: bold">${formatNumber(parseFloat(corresponsingAirtTableFeature.volume_per_hectare_without_bark) / 10, 'nb-NO', 1)}</span>
                 <span>m^3/daa</span>
+              </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${volume_per_hectare_without_barkTT?.fields && volume_per_hectare_without_barkTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
               </td>
             </tr>`;
     content += `
@@ -577,6 +639,13 @@ export const generateHKPopupContent = (
               <td style="padding: 5px; display: flex; justify-content: space-between;">
                 <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.standVolumeMads), 'nb-NO', 1)}</span>
                 <span>m^3</span>
+              </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${volume_without_barkTT?.fields && volume_without_barkTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
               </td>
             </tr>`;
     // Add the volume_growth_factor
@@ -587,6 +656,13 @@ export const generateHKPopupContent = (
                 <span style="font-weight: bold">${sumObj.volume_growth_factor}</span>
                 <span>%</span>
               </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${volume_growth_factorTT?.fields && volume_growth_factorTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
+              </td>
             </tr>`;
     // The price of the timber for a species
     content += `
@@ -596,7 +672,15 @@ export const generateHKPopupContent = (
                 <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.avgSpeciesPriceCalculated), 'nb-NO', 0)}</span>
                 <span>kr</span>
               </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${avg_price_m3TT?.fields && avg_price_m3TT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
+              </td>
             </tr>`;
+    // Brutto verdi
     content += `
             <tr style="border: 1px solid black;">
               <td style="padding: 5px; border: 1px solid black;">Forv. brutto verdi</td>
@@ -604,7 +688,15 @@ export const generateHKPopupContent = (
                 <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.totalBruttoVerdi), 'nb-NO', 0)}</span>
                 <span>kr</span>
               </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${bruttoTT?.fields && bruttoTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
+              </td>
             </tr>`;
+    // Netto verdi
     if (sumObj.totalNettoVerdi) {
       content += `
               <tr style="border: 1px solid black; background-color: ${rowBGColor}">
@@ -612,6 +704,13 @@ export const generateHKPopupContent = (
                 <td style="padding: 5px; display: flex; justify-content: space-between;">
                   <span style="font-weight: bold">${formatNumber(parseFloat(sumObj.totalNettoVerdi), 'nb-NO', 0)}</span>
                   <span>kr</span>
+                </td>
+                <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                  <span style="padding: 5px; background-color: transparent; text-align: center;">
+                    <span class="info-icon" data-tooltip="${nettoTT?.fields && nettoTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                      i
+                    </span>
+                  </span>
                 </td>
               </tr>`;
     }
