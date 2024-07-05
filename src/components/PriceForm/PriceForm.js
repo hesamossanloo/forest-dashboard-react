@@ -66,14 +66,18 @@ const PriceForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFetchingAirtableRecords, userSpeciesPrices]);
 
+  let tommerPriserTT;
+  let driftskostnadTT;
   // define the tommerPriserTT and driftskostnadTT objects as const and get them from the airTableTooltips.fields.
   // where the Technical_key is equal to tommerPriserTT or driftskostnadTT
-  const tommerPriserTT = airTableTooltips.find(
-    (tooltip) => tooltip.fields.Technical_key === 'tommerPriserTT'
-  );
-  const driftskostnadTT = airTableTooltips.find(
-    (tooltip) => tooltip.fields.Technical_key === 'driftskostnadTT'
-  );
+  if (airTableTooltips.length > 0) {
+    tommerPriserTT = airTableTooltips.find(
+      (tooltip) => tooltip.fields.Technical_key === 'tommerPriserTT'
+    );
+    driftskostnadTT = airTableTooltips.find(
+      (tooltip) => tooltip.fields.Technical_key === 'driftskostnadTT'
+    );
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (currentUser) {
