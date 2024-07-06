@@ -13,45 +13,40 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { fetchPricesRecords } from 'services/airtable';
+import { initialPrices } from 'variables/forest';
 import { auth, db } from '../services/firebase';
 
 const AuthContext = createContext();
-const initialPrices = {
-  granSagtommerPrice: '',
-  granMassevirkePrice: '',
-  furuSagtommerPrice: '',
-  furuMassevirkePrice: '',
-  lauvSagtommerPrice: '',
-  lauvMassevirkePrice: '',
-  hogstUtkPrice: '',
-};
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [userSpeciesPrices, setUserSpeciesPrices] = useState(initialPrices); // New state for prices
-
   useEffect(() => {
-    setLoading(true);
+    setAuthLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      if (user) {
-        // Fetch prices after successful login
-        const userDocRef = doc(db, 'users', user.uid);
-        getDoc(userDocRef).then((docSnap) => {
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            if (userData.prices) {
-              setUserSpeciesPrices(userData.prices); // Set prices in the context
-            }
-          }
-        });
-      }
-      setLoading(false);
+      // if (user) {
+      //   // Fetch prices after successful login
+      //   const userDocRef = doc(db, 'users', user.uid);
+      //   getDoc(userDocRef).then((docSnap) => {
+      //     if (docSnap.exists()) {
+      //       const userData = docSnap.data();
+      //       if (userData.prices) {
+      //         console.log('User prices1:', userData.prices);
+      //         setUserSpeciesPrices(userData.prices); // Set prices in the context
+      //       }
+      //       console.log('User prices2:', userSpeciesPrices);
+      //     }
+      //   });
+      // }
+      setAuthLoading(false);
     });
     return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Provide authError and a method to clear it to the context consumers
@@ -77,7 +72,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signUp = async (email, password, firstName, lastName) => {
-    setLoading(true); // Set loading to true at the start of the function
+    setAuthLoading(true); // Set loading to true at the start of the function
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -95,12 +90,38 @@ export const AuthProvider = ({ children }) => {
       console.error('Error signing up:', error);
       setAuthError(error.message);
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
-
+  const fetchAirtablePrices = async () => {
+    try {
+      const records = await fetchPricesRecords();
+      // map the records to this format const initialPrices = {
+      //   granSagtommerPrice: '',
+      //   granMassevirkePrice: '',
+      //   furuSagtommerPrice: '',
+      //   furuMassevirkePrice: '',
+      //   lauvSagtommerPrice: '',
+      //   lauvMassevirkePrice: '',
+      //   hogstUtkPrice: '',
+      // };
+      const prices = records.reduce((acc, record) => {
+        const { specie, price_saw_wood, price_pulp_wood, cost_harvest_per_m3 } =
+          record.fields;
+        return {
+          ...acc,
+          [`${specie}SagtommerPrice`]: price_saw_wood || 0,
+          [`${specie}MassevirkePrice`]: price_pulp_wood || 0,
+          [`hogstUtkPrice`]: cost_harvest_per_m3 || 0,
+        };
+      }, {});
+      return prices;
+    } catch (error) {
+      console.error('Error fetching Prices records:', error);
+    }
+  };
   const signIn = async (email, password, rememberMe) => {
-    setLoading(true); // Set loading to true at the start of the function
+    setAuthLoading(true); // Set loading to true at the start of the function
     try {
       // Set persistence based on the "Remember Me" checkbox
       const persistence = rememberMe
@@ -108,17 +129,44 @@ export const AuthProvider = ({ children }) => {
         : browserSessionPersistence;
       await setPersistence(auth, persistence);
       await signInWithEmailAndPassword(auth, email, password);
+
+      const airtablePrices = await fetchAirtablePrices();
+
+      const user = auth.currentUser;
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        let updatedPrices = userData.prices || {};
+
+        // Overwrite empty prices with Airtable prices
+        for (const key in airtablePrices) {
+          if (!updatedPrices[key] || updatedPrices[key] === '') {
+            updatedPrices[key] = airtablePrices[key];
+          }
+        }
+
+        // Update Firestore with the new prices
+        await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
+        setUserSpeciesPrices(updatedPrices);
+      } else {
+        // If the user document doesn't exist, create it with Airtable prices
+        await setDoc(userDocRef, { prices: airtablePrices }, { merge: true });
+        setUserSpeciesPrices(airtablePrices);
+      }
+
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing in:', error);
       setAuthError(error.message);
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const signInWithGoogle = async (rememberMe) => {
-    setLoading(true);
+    setAuthLoading(true);
     // Set persistence based on the "Remember Me" checkbox
     const persistence = rememberMe
       ? browserLocalPersistence
@@ -130,24 +178,44 @@ export const AuthProvider = ({ children }) => {
       const user = userCredential.user;
       const userDocRef = await doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
+
+      const airtablePrices = await fetchAirtablePrices();
+
       if (!userDoc.exists()) {
         await setDoc(doc(db, 'users', user.uid), {
           firstName: user.displayName.split(' ')[0],
           lastName: user.displayName.split(' ')[1],
           email: user.email,
+          prices: airtablePrices,
         });
+        setUserSpeciesPrices(airtablePrices);
+      } else {
+        const userData = userDoc.data();
+        let updatedPrices = userData.prices || {};
+
+        // Overwrite empty prices with Airtable prices
+        for (const key in airtablePrices) {
+          if (!updatedPrices[key] || updatedPrices[key] === '') {
+            updatedPrices[key] = airtablePrices[key];
+          }
+        }
+
+        // Update Firestore with the new prices
+        await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
+        setUserSpeciesPrices(updatedPrices);
       }
+
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing in with Google:', error);
       setAuthError(error.message);
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const logout = async () => {
-    setLoading(true); // Set loading to true at the start of the function
+    setAuthLoading(true); // Set loading to true at the start of the function
     try {
       await signOut(auth);
       return { wasSuccessful: true };
@@ -155,7 +223,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Error signing out:', error);
       setAuthError(error.message);
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
@@ -169,11 +237,12 @@ export const AuthProvider = ({ children }) => {
     logout,
     clearError,
     authError,
+    authLoading,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
+      {authLoading ? (
         <div className="spinner-container">
           <div className="spinner"></div>
         </div>

@@ -34,59 +34,32 @@ const buttonContainerStyle = {
 };
 
 const PriceForm = () => {
-  const initialPrices = {
-    granSagtommerPrice: '',
-    granMassevirkePrice: '',
-    furuSagtommerPrice: '',
-    furuMassevirkePrice: '',
-    lauvSagtommerPrice: '',
-    lauvMassevirkePrice: '',
-    hogstUtkPrice: '',
-  };
   const {
     currentUser,
     userSpeciesPrices,
     updateUserSpeciesPrices,
-    loading: authLoading,
+    authLoading,
   } = useAuth();
-  const { airTablePricesCosts, isFetchingAirtableRecords, airTableTooltips } =
-    useAirtable();
-  const [formData, setFormData] = useState(initialPrices);
+  const { airTablePricesCosts, isFetchingAirtableRecords } = useAirtable();
+  const [formData, setFormData] = useState(userSpeciesPrices || {});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    if (
-      !isFetchingAirtableRecords &&
-      userSpeciesPrices.granSagtommerPrice !== ''
-    ) {
-      setFormData({ ...initialPrices, ...userSpeciesPrices });
-    } else if (!isFetchingAirtableRecords) {
-      setFormData({ ...initialPrices, ...airTablePricesCosts });
+    if (!authLoading) {
+      setFormData(userSpeciesPrices);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFetchingAirtableRecords, userSpeciesPrices]);
+  }, [authLoading, userSpeciesPrices]);
 
-  // define the tommerPriserTT and driftskostnadTT objects as const and get them from the airTableTooltips.fields.
-  // where the Technical_key is equal to tommerPriserTT or driftskostnadTT
-  const tommerPriserTT = airTableTooltips.find(
-    (tooltip) => tooltip.fields.Technical_key === 'tommerPriserTT'
-  );
-  const driftskostnadTT = airTableTooltips.find(
-    (tooltip) => tooltip.fields.Technical_key === 'driftskostnadTT'
-  );
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (currentUser) {
       try {
         const userDocRef = doc(db, 'users', currentUser.uid);
-        // check if any of the prices are empty and set them to 0
         const formDataZeros = Object.entries(formData).reduce(
-          (acc, [key, value]) => {
-            return {
-              ...acc,
-              [key]: value === '' ? 0 : value,
-            };
-          },
+          (acc, [key, value]) => ({
+            ...acc,
+            [key]: value === '' ? 0 : value,
+          }),
           {}
         );
         await updateDoc(userDocRef, { prices: formDataZeros });
@@ -94,23 +67,21 @@ const PriceForm = () => {
         setIsSubmitted(true);
         setTimeout(() => setIsSubmitted(false), 1500);
       } catch (error) {
-        console.error('Error adding document: ', error);
+        console.error('Error updating document: ', error);
       }
     }
   };
 
   const resetForm = async (e) => {
     e.preventDefault();
-    if (currentUser) {
+    if (currentUser && !isFetchingAirtableRecords) {
       try {
         setFormData(airTablePricesCosts);
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, { prices: airTablePricesCosts });
         await updateUserSpeciesPrices(airTablePricesCosts);
         setIsSubmitted(true);
         setTimeout(() => setIsSubmitted(false), 1500);
       } catch (error) {
-        console.error('Error adding document: ', error);
+        console.error('Error resetting document: ', error);
       }
     }
   };
@@ -124,9 +95,10 @@ const PriceForm = () => {
     }));
   };
 
-  if (authLoading || isFetchingAirtableRecords) {
+  if (authLoading && isFetchingAirtableRecords) {
     return <div>Loading...</div>;
   }
+
   return (
     <Card style={cardStyle}>
       <CardBody>
@@ -143,12 +115,12 @@ const PriceForm = () => {
           />
           <UncontrolledTooltip target="tommerPriserTT" delay={0}>
             <u>
-              <b>{tommerPriserTT?.fields && tommerPriserTT.fields.Label}:</b>
+              <b>{'Tooltip Label for Tømmerpriser'}</b>
             </u>
             <span>
               <br />
             </span>
-            {tommerPriserTT?.fields && tommerPriserTT.fields.Tooltip}
+            {'Tooltip Content for Tømmerpriser'}
           </UncontrolledTooltip>
           <FormGroup>
             <Label for="granSagtommerPrice">Gran - Sagtømmer</Label>
@@ -157,7 +129,7 @@ const PriceForm = () => {
               id="granSagtommerPrice"
               placeholder="e.g. 769"
               style={{ fontSize: '14px' }}
-              value={formData.granSagtommerPrice}
+              value={formData.granSagtommerPrice || ''}
               onChange={handleChange}
             />
           </FormGroup>
@@ -168,8 +140,8 @@ const PriceForm = () => {
               id="granMassevirkePrice"
               placeholder="e.g. 602"
               style={{ fontSize: '14px' }}
-              value={formData.granMassevirkePrice}
-              onChange={handleChange} // Update this
+              value={formData.granMassevirkePrice || ''}
+              onChange={handleChange}
             />
           </FormGroup>
           <FormGroup>
@@ -179,8 +151,8 @@ const PriceForm = () => {
               id="furuSagtommerPrice"
               placeholder="e.g. 740"
               style={{ fontSize: '14px' }}
-              value={formData.furuSagtommerPrice}
-              onChange={handleChange} // Update this
+              value={formData.furuSagtommerPrice || ''}
+              onChange={handleChange}
             />
           </FormGroup>
           <FormGroup>
@@ -190,8 +162,8 @@ const PriceForm = () => {
               id="furuMassevirkePrice"
               placeholder="e.g. 586"
               style={{ fontSize: '14px' }}
-              value={formData.furuMassevirkePrice}
-              onChange={handleChange} // Update this
+              value={formData.furuMassevirkePrice || ''}
+              onChange={handleChange}
             />
           </FormGroup>
           <FormGroup>
@@ -201,8 +173,8 @@ const PriceForm = () => {
               id="lauvMassevirkePrice"
               placeholder="e.g. 586"
               style={{ fontSize: '14px' }}
-              value={formData.lauvMassevirkePrice}
-              onChange={handleChange} // Update this
+              value={formData.lauvMassevirkePrice || ''}
+              onChange={handleChange}
             />
           </FormGroup>
           <FormGroup>
@@ -218,14 +190,12 @@ const PriceForm = () => {
             />
             <UncontrolledTooltip target="driftskostnadTT" delay={0}>
               <u>
-                <b>
-                  {driftskostnadTT?.fields && driftskostnadTT.fields.Label}:
-                </b>
+                <b>{'Tooltip Label for Driftskostnad'}</b>
               </u>
               <span>
                 <br />
               </span>
-              {driftskostnadTT?.fields && driftskostnadTT.fields.Tooltip}
+              {'Tooltip Content for Driftskostnad'}
             </UncontrolledTooltip>
             <Label for="hogstUtkPrice">Hogst & utkjøring Per m^3:</Label>
             <Input
@@ -233,8 +203,8 @@ const PriceForm = () => {
               id="hogstUtkPrice"
               placeholder="e.g. 586"
               style={{ fontSize: '14px' }}
-              value={formData.hogstUtkPrice}
-              onChange={handleChange} // Update this
+              value={formData.hogstUtkPrice || ''}
+              onChange={handleChange}
             />
           </FormGroup>
           <div style={buttonContainerStyle}>
@@ -271,4 +241,5 @@ const PriceForm = () => {
     </Card>
   );
 };
+
 export default PriceForm;
