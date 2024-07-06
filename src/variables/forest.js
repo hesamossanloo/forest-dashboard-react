@@ -6,7 +6,15 @@ export const mapCoordinations = {
   akselForestPosition: { name: 'forest4', coord: [59.962, 11.72415] }, // Coordinates for Knut's Forest 59.96070,11.56955, you can get these from QGIS, by right click inthe center of where you want and get the coordinates of the desired CRS
   norwayPosition: [59.9139, 10.7522], // Coordinates for Oslo, Norway
 };
-
+export const initialPrices = {
+  granSagtommerPrice: '',
+  granMassevirkePrice: '',
+  furuSagtommerPrice: '',
+  furuMassevirkePrice: '',
+  lauvSagtommerPrice: '',
+  lauvMassevirkePrice: '',
+  hogstUtkPrice: '',
+};
 export const nibioGetFeatInfoHKBaseParams = {
   language: 'nor',
   SERVICE: 'WMS',

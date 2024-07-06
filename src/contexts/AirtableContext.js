@@ -69,11 +69,17 @@ const AirtableProvider = ({ children }) => {
         console.error('Error fetching Prices records:', error);
       }
     };
-    setIsFetchingAirtableRecords(true);
-    getPricesRecords();
-    getBestandRecords();
-    getTooltipsRecords();
-    setIsFetchingAirtableRecords(false);
+    const fetchData = async () => {
+      setIsFetchingAirtableRecords(true);
+      await Promise.all([
+        getPricesRecords(),
+        getBestandRecords(),
+        getTooltipsRecords(),
+      ]);
+      setIsFetchingAirtableRecords(false);
+    };
+
+    fetchData();
   }, []);
 
   return (
