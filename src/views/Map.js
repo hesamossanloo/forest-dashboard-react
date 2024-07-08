@@ -81,18 +81,19 @@ function Map() {
     if (geoJsonLayer) {
       geoJsonLayer.eachLayer((layer) => {
         const feature = layer.feature;
-
-        if (feature.properties.hogstkl_verdi === '5') {
-          layer.setStyle({
-            color: mapFilter.HK5 ? '#de6867' : 'blue',
-            weight: mapFilter.HK5 ? 6 : 1,
-          });
-        }
-        if (feature.properties.hogstkl_verdi === '4') {
-          layer.setStyle({
-            color: mapFilter.HK4 ? '#bc8963' : 'blue',
-            weight: mapFilter.HK4 ? 6 : 1,
-          });
+        if (!previousGeoJSONLayersRef.current.includes(layer)) {
+          if (feature.properties.hogstkl_verdi === '5') {
+            layer.setStyle({
+              color: mapFilter.HK5 ? '#de6867' : 'blue',
+              weight: mapFilter.HK5 ? 6 : 1,
+            });
+          }
+          if (feature.properties.hogstkl_verdi === '4') {
+            layer.setStyle({
+              color: mapFilter.HK4 ? '#bc8963' : 'blue',
+              weight: mapFilter.HK4 ? 6 : 1,
+            });
+          }
         }
       });
     }
@@ -274,6 +275,7 @@ function Map() {
       HK5: false,
       Protected: false,
     });
+    setSelectedVectorFeature(null);
     previousGeoJSONLayersRef.current.forEach((layer) => {
       layer.setStyle({
         fillColor: 'transparent',
@@ -282,6 +284,7 @@ function Map() {
         weight: 1,
       });
     });
+    previousGeoJSONLayersRef.current = [];
     // Clear the array after resetting styles
     setDeselectPolygons(true);
   };
