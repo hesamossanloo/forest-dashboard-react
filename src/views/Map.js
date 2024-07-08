@@ -267,7 +267,7 @@ function Map() {
         }}
         onClick={resetHighlightedFeatures} // Update this line
       >
-        Deselect
+        Deselect all
       </Button>
       <MapContainer
         id="SkogAppMapContainer"
