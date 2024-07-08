@@ -9,6 +9,7 @@ import SignIn from 'components/SignIn/SignIn';
 import SignUp from 'components/SignUp/SignUp';
 import { AirtableProvider } from 'contexts/AirtableContext';
 import { AuthProvider } from 'contexts/AuthContext';
+import { MapFilterProvider } from 'contexts/MapFilterContext';
 import AdminLayout from 'layouts/Admin/Admin.js';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -27,7 +28,9 @@ root.render(
               element={
                 <PrivateRoute>
                   <AirtableProvider>
-                    <AdminLayout />
+                    <MapFilterProvider>
+                      <AdminLayout />
+                    </MapFilterProvider>
                   </AirtableProvider>
                 </PrivateRoute>
               }

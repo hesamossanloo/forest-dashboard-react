@@ -14,6 +14,7 @@ import {
   calculateBoundingBox,
   isPointInsidePolygon,
   isPointInsideTeig,
+  openHKPopupWithContent,
   WFSFeatureLayerNamefromXML,
 } from './utililtyFunctions';
 
@@ -26,9 +27,8 @@ CustomMapEvents.propTypes = {
   }).isRequired,
   setActiveOverlay: PropTypes.func.isRequired,
   setDeselectPolygons: PropTypes.func.isRequired,
-  clickedOnNotBestandRef: PropTypes.object.isRequired,
   selectedVectorFeatureRef: PropTypes.object.isRequired,
-  multiPolygonSelect: PropTypes.bool.isRequired,
+  multiPolygonSwitchIsON: PropTypes.bool.isRequired,
   deselectPolygons: PropTypes.bool.isRequired,
   madsTeig: PropTypes.object.isRequired,
   bjoernTeig: PropTypes.object.isRequired,
@@ -42,13 +42,12 @@ export default function CustomMapEvents(props) {
     activeOverlay,
     setActiveOverlay,
     setDeselectPolygons,
-    clickedOnNotBestandRef,
     selectedVectorFeatureRef,
     madsTeig,
     bjoernTeig,
     knutTeig,
     akselTeig,
-    multiPolygonSelect,
+    multiPolygonSwitchIsON,
     deselectPolygons,
     selectedForest,
   } = props;
@@ -68,13 +67,14 @@ export default function CustomMapEvents(props) {
     if (deselectPolygons) {
       map.closePopup();
       setSelectedFeatures([]);
+      selectedVectorFeatureRef.current = null;
       setDeselectPolygons(false);
     } else {
-      // This will reset the selected features when multiPolygonSelect changes
+      // This will reset the selected features when multiPolygonSwitchIsON changes
       setSelectedFeatures([...selectedFeatures]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiPolygonSelect, deselectPolygons]); // Dependency array includes multiPolygonSelect
+  }, [multiPolygonSwitchIsON, deselectPolygons]); // Dependency array includes multiPolygonSwitchIsON
 
   useMapEvents({
     click: async (e) => {
@@ -103,7 +103,7 @@ export default function CustomMapEvents(props) {
           e.latlng,
           chosenForest.features[0].geometry.coordinates
         ) &&
-        (clickedOnNotBestandRef.current || !clickedOnHKGeoJSON)
+        !clickedOnHKGeoJSON
       ) {
         L.popup({ interactive: true })
           .setLatLng(e.latlng)
@@ -113,7 +113,6 @@ export default function CustomMapEvents(props) {
           .openOn(map);
       }
       if (
-        !clickedOnNotBestandRef.current &&
         (activeOverlay['Stands'] || activeOverlay['Skogbruksplan']) &&
         clickedOnHKGeoJSON
       ) {
@@ -132,73 +131,58 @@ export default function CustomMapEvents(props) {
           selectedVectorFeatureRef.current.properties
         ) {
           let MISClickedFeatureInfos;
-          // In case the selected feature is already in the array,
-          // which means the user has clicked on it before, we don't
-          // need to add it to the array. That's why we check if the teigBestNr
-          // already exists or not!
-          // const teigBestNrLastSelected = newFeatures[0]?.properties?.teig_best_nr;
 
           const teigBestNrLastSelected =
             selectedVectorFeatureRef.current.properties.teig_best_nr;
+
+          // Handle MIS Layer (Forbidden areas WMS)
           if (
             activeOverlay['MIS'] &&
             MIS_BESTAND_IDs.indexOf(teigBestNrLastSelected) > -1
           ) {
-            // Preparing the request to GetFeatreInfo for MIS WMS
-            // The NIBIO WMS expects the Query params to follow certain patterns. After
-            // analysing how QGIS made the WMS call, reverse engineered the call
-            // and here we are building one of those params, i.e. BBOX, size.x, size.y and the CRS
-            const { CRS, size, BBOX } = calculateBoundingBox(map);
-            // The params should be in uppercase, unless the WMS won't accept it
-            const params = {
-              ...nibioGetFeatInfoMISBaseParams,
-              BBOX,
-              CRS,
-              WIDTH: size.x,
-              HEIGHT: size.y,
-              I: Math.round(e.containerPoint.x),
-              J: Math.round(e.containerPoint.y),
-            };
-            const url = `https://wms.nibio.no/cgi-bin/mis?${new URLSearchParams(params).toString()}`;
-            const response = await fetch(url);
-            const data = await response.text();
-            const WMSFeatureInfoRaw = new WMSGetFeatureInfo();
-            const layerNames = WFSFeatureLayerNamefromXML(data);
-            MISClickedFeatureInfos = WMSFeatureInfoRaw.readFeatures(data);
-            // Assuming layerNames is an array of strings and MISClickedFeatureInfos is an array of objects
-            if (layerNames.length === MISClickedFeatureInfos.length) {
-              // Loop through each feature info
-              MISClickedFeatureInfos.forEach((featureInfo, index) => {
-                // Assign the corresponding layer name from layerNames to this feature info
-                // Assuming you're adding a new property 'layerName' to each feature info object
-                featureInfo.layerName = layerNames[index];
-              });
-            } else {
-              console.error(
-                'The count of layerNames does not match the count of MISClickedFeatureInfos'
-              );
+            if (!selectedFeatures.includes(selectedVectorFeatureRef.current)) {
+              openHKPopupWithContent('Loading...', e, map);
+              // Preparing the request to GetFeatreInfo for MIS WMS
+              // The NIBIO WMS expects the Query params to follow certain patterns. After
+              // analysing how QGIS made the WMS call, reverse engineered the call
+              // and here we are building one of those params, i.e. BBOX, size.x, size.y and the CRS
+              const { CRS, size, BBOX } = calculateBoundingBox(map);
+              // The params should be in uppercase, unless the WMS won't accept it
+              const params = {
+                ...nibioGetFeatInfoMISBaseParams,
+                BBOX,
+                CRS,
+                WIDTH: size.x,
+                HEIGHT: size.y,
+                I: Math.round(e.containerPoint.x),
+                J: Math.round(e.containerPoint.y),
+              };
+              const url = `https://wms.nibio.no/cgi-bin/mis?${new URLSearchParams(params).toString()}`;
+              const response = await fetch(url);
+              const data = await response.text();
+              const WMSFeatureInfoRaw = new WMSGetFeatureInfo();
+              const layerNames = WFSFeatureLayerNamefromXML(data);
+              MISClickedFeatureInfos = WMSFeatureInfoRaw.readFeatures(data);
+              // Assuming layerNames is an array of strings and MISClickedFeatureInfos is an array of objects
+              if (layerNames.length === MISClickedFeatureInfos.length) {
+                // Loop through each feature info
+                MISClickedFeatureInfos.forEach((featureInfo, index) => {
+                  // Assign the corresponding layer name from layerNames to this feature info
+                  // Assuming you're adding a new property 'layerName' to each feature info object
+                  featureInfo.layerName = layerNames[index];
+                });
+              } else {
+                console.error(
+                  'The count of layerNames does not match the count of MISClickedFeatureInfos'
+                );
+              }
             }
           }
-          // Reset selected features if not in multiPolygonSelect mode
-          if (!multiPolygonSelect) {
-            setSelectedFeatures([selectedVectorFeatureRef.current]); // Only the last selected feature is kept
-            if (!isFetchingAirtableRecords && airTableBestandInfos.length > 0) {
-              // Ensure data is loaded
-              SkogbrukWMSFeaturesHandler(
-                e,
-                [selectedVectorFeatureRef.current],
-                map,
-                multiPolygonSelect,
-                MISClickedFeatureInfos,
-                airTableBestandInfos,
-                airTableTooltips,
-                userSpeciesPrices
-              );
-            }
-          } else {
-            // Multi select is true
 
-            // Check if the clicked polygon was already selected and removed from the selectedFeatures
+          // Reset selected features if not in multiPolygonSwitchIsON mode
+          // In Single mode
+          if (!multiPolygonSwitchIsON) {
+            // Check if the clicked polygon was already selected
             if (
               teigBestNrLastSelected &&
               !selectedFeatures.some(
@@ -206,7 +190,40 @@ export default function CustomMapEvents(props) {
                   feature.properties?.teig_best_nr === teigBestNrLastSelected
               )
             ) {
-              // Add to selected features for multi selection mode
+              // If NOT the add to selected features for multi selection mode
+              setSelectedFeatures([selectedVectorFeatureRef.current]);
+              if (
+                !isFetchingAirtableRecords &&
+                airTableBestandInfos.length > 0
+              ) {
+                // Ensure data is loaded
+                SkogbrukWMSFeaturesHandler(
+                  e,
+                  [selectedVectorFeatureRef.current],
+                  map,
+                  multiPolygonSwitchIsON,
+                  MISClickedFeatureInfos,
+                  airTableBestandInfos,
+                  airTableTooltips,
+                  userSpeciesPrices
+                );
+              }
+            } else {
+              // If YES, then removed from the selectedFeatures
+              setSelectedFeatures([]);
+            }
+          } else {
+            // In Multi mode
+
+            // Check if the clicked polygon was already selected
+            if (
+              teigBestNrLastSelected &&
+              !selectedFeatures.some(
+                (feature) =>
+                  feature.properties?.teig_best_nr === teigBestNrLastSelected
+              )
+            ) {
+              // If NOT the add to selected features for multi selection mode
               setSelectedFeatures([
                 ...selectedFeatures,
                 selectedVectorFeatureRef.current,
@@ -216,7 +233,7 @@ export default function CustomMapEvents(props) {
                   e,
                   selectedFeatures.concat([selectedVectorFeatureRef.current]),
                   map,
-                  multiPolygonSelect,
+                  multiPolygonSwitchIsON,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
                   airTableTooltips,
@@ -224,7 +241,7 @@ export default function CustomMapEvents(props) {
                 );
               }
             } else {
-              // Check if the clicked polygon was already selected and removed from the selectedFeatures
+              // If YES, then removed from the selectedFeatures
 
               // Remove the clicked polygon from the selectedFeatures
               const newSelectedFeatures = selectedFeatures.filter(
@@ -241,7 +258,7 @@ export default function CustomMapEvents(props) {
                   e,
                   newSelectedFeatures,
                   map,
-                  multiPolygonSelect,
+                  multiPolygonSwitchIsON,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
                   airTableTooltips,

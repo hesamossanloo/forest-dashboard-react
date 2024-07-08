@@ -94,12 +94,6 @@ export const akselPolygonsPNGBounds = [
   [60.0127997021416988, 11.8577935105911383], // Top-right corner
 ];
 
-export const forbideanAreas = [
-  21, 29, 39, 92, 70, 35, 31, 18, 123, 101, 201, 173, 222, 220, 273, 161, 305,
-  268, 321, 137, 218, 285, 310, 312, 316, 317, 299, 294, 381, 109, 105, 82, 362,
-  395,
-];
-
 export const unwantedMISFeatureKeys = ['boundedBy', 'uuid_tekst', 'ogc_fid'];
 
 export const desiredFeatInfoAttrHKLayer = {
