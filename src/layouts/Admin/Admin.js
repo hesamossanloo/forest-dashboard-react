@@ -4,7 +4,6 @@ import Footer from 'components/Footer/Footer.js';
 import AdminNavbar from 'components/Navbars/AdminNavbar.js';
 import Sidebar from 'components/Sidebar/Sidebar.js';
 import { BackgroundColorContext } from 'contexts/BackgroundColorContext';
-import { MapFilterProvider } from 'contexts/MapFilterContext';
 import PerfectScrollbar from 'perfect-scrollbar';
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
@@ -85,32 +84,30 @@ function Admin(props) {
       {({ color, changeColor }) => (
         <React.Fragment>
           <div className="wrapper">
-            <MapFilterProvider>
-              <Sidebar
-                routes={routes}
-                logo={{
-                  outterLink: '',
-                  text: 'SKOGAPP',
-                  imgSrc: logo,
-                }}
+            <Sidebar
+              routes={routes}
+              logo={{
+                outterLink: '',
+                text: 'SKOGAPP',
+                imgSrc: logo,
+              }}
+              toggleSidebar={toggleSidebar}
+            />
+            <div className="main-panel" ref={mainPanelRef} data={color}>
+              <AdminNavbar
+                brandText={getBrandText(location.pathname)}
                 toggleSidebar={toggleSidebar}
+                sidebarOpened={sidebarOpened}
               />
-              <div className="main-panel" ref={mainPanelRef} data={color}>
-                <AdminNavbar
-                  brandText={getBrandText(location.pathname)}
-                  toggleSidebar={toggleSidebar}
-                  sidebarOpened={sidebarOpened}
+              <Routes>
+                {getRoutes(routes)}
+                <Route
+                  path="/"
+                  element={<Navigate to="/admin/map" replace />}
                 />
-                <Routes>
-                  {getRoutes(routes)}
-                  <Route
-                    path="/"
-                    element={<Navigate to="/admin/map" replace />}
-                  />
-                </Routes>
-                {location.pathname === '/admin/map' ? null : <Footer fluid />}
-              </div>
-            </MapFilterProvider>
+              </Routes>
+              {location.pathname === '/admin/map' ? null : <Footer fluid />}
+            </div>
           </div>
         </React.Fragment>
       )}
