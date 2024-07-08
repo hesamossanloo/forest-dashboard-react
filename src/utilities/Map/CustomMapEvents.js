@@ -67,6 +67,7 @@ export default function CustomMapEvents(props) {
     if (deselectPolygons) {
       map.closePopup();
       setSelectedFeatures([]);
+      selectedVectorFeatureRef.current = null;
       setDeselectPolygons(false);
     } else {
       // This will reset the selected features when multiPolygonSwitchIsON changes
