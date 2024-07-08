@@ -27,7 +27,7 @@ CustomMapEvents.propTypes = {
   setActiveOverlay: PropTypes.func.isRequired,
   setDeselectPolygons: PropTypes.func.isRequired,
   selectedVectorFeatureRef: PropTypes.object.isRequired,
-  multiPolygonSelect: PropTypes.bool.isRequired,
+  multiPolygonSwitchIsON: PropTypes.bool.isRequired,
   deselectPolygons: PropTypes.bool.isRequired,
   madsTeig: PropTypes.object.isRequired,
   bjoernTeig: PropTypes.object.isRequired,
@@ -46,7 +46,7 @@ export default function CustomMapEvents(props) {
     bjoernTeig,
     knutTeig,
     akselTeig,
-    multiPolygonSelect,
+    multiPolygonSwitchIsON,
     deselectPolygons,
     selectedForest,
   } = props;
@@ -68,11 +68,11 @@ export default function CustomMapEvents(props) {
       setSelectedFeatures([]);
       setDeselectPolygons(false);
     } else {
-      // This will reset the selected features when multiPolygonSelect changes
+      // This will reset the selected features when multiPolygonSwitchIsON changes
       setSelectedFeatures([...selectedFeatures]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiPolygonSelect, deselectPolygons]); // Dependency array includes multiPolygonSelect
+  }, [multiPolygonSwitchIsON, deselectPolygons]); // Dependency array includes multiPolygonSwitchIsON
 
   useMapEvents({
     click: async (e) => {
@@ -174,8 +174,8 @@ export default function CustomMapEvents(props) {
             }
           }
 
-          // Reset selected features if not in multiPolygonSelect mode
-          if (!multiPolygonSelect) {
+          // Reset selected features if not in multiPolygonSwitchIsON mode
+          if (!multiPolygonSwitchIsON) {
             // Check if the clicked polygon was already selected
             if (
               teigBestNrLastSelected &&
@@ -195,7 +195,7 @@ export default function CustomMapEvents(props) {
                   e,
                   [selectedVectorFeatureRef.current],
                   map,
-                  multiPolygonSelect,
+                  multiPolygonSwitchIsON,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
                   airTableTooltips,
@@ -227,7 +227,7 @@ export default function CustomMapEvents(props) {
                   e,
                   selectedFeatures.concat([selectedVectorFeatureRef.current]),
                   map,
-                  multiPolygonSelect,
+                  multiPolygonSwitchIsON,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
                   airTableTooltips,
@@ -252,7 +252,7 @@ export default function CustomMapEvents(props) {
                   e,
                   newSelectedFeatures,
                   map,
-                  multiPolygonSelect,
+                  multiPolygonSwitchIsON,
                   MISClickedFeatureInfos,
                   airTableBestandInfos,
                   airTableTooltips,
