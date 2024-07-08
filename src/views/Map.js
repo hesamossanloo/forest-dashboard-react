@@ -35,7 +35,7 @@ import {
   madsPolygonsPNGBounds,
   mapCoordinations,
 } from 'variables/forest';
-import { MAP_DEFAULT_ZOOM_LEVEL, forbideanAreas } from 'variables/forest.js';
+import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
 
@@ -64,8 +64,6 @@ function Map() {
 
   const [mapFilter, setMapFilter] = useContext(MapFilterContext);
 
-  const [clickedOnNotBestand, setClickedOnNotBestand] = useState(false);
-  const clickedOnNotBestandRef = useRef(clickedOnNotBestand);
   const [selectedVectorFeature, setSelectedVectorFeature] = useState(null);
   const selectedVectorFeatureRef = useRef(selectedVectorFeature);
   const [selectedForest, setSelectedForest] = useState(forest1); // Default to forest 1
@@ -117,10 +115,6 @@ function Map() {
       });
   }, [mapFilter]);
 
-  // We need a ref so that when we pass it to the child component, it always shows the current value and not the previous value
-  useEffect(() => {
-    clickedOnNotBestandRef.current = clickedOnNotBestand;
-  }, [clickedOnNotBestand]);
   useEffect(() => {
     selectedVectorFeatureRef.current = selectedVectorFeature;
   }, [selectedVectorFeature]);
@@ -144,26 +138,43 @@ function Map() {
     geoJSONLayer.on({
       click: () => {
         if (feature && feature.properties && feature.properties.teig_best_nr) {
-          setClickedOnNotBestand(
-            forbideanAreas.includes(feature.properties.teig_best_nr)
-          );
           selectedVectorFeatureRef.current = feature;
           setSelectedVectorFeature(feature);
-          clickedOnNotBestandRef.current = forbideanAreas.includes(
-            feature.properties.teig_best_nr
-          );
         }
-        if (!clickedOnNotBestandRef.current) {
-          // If multiPolygonSelectRef.current is false, unhighlight the previous layer
-          if (!multiPolygonSelectRef.current) {
-            previousGeoJSONLayersRef.current.forEach((layer) => {
-              layer.setStyle({
-                color: 'blue', // Make borders transparent initially
-                weight: 1,
-              });
+        // If multiPolygonSelectRef.current is false, unhighlight the previous layer
+        if (!multiPolygonSelectRef.current) {
+          previousGeoJSONLayersRef.current.forEach((layer) => {
+            layer.setStyle({
+              color: 'blue', // Make borders transparent initially
+              weight: 1,
             });
-            previousGeoJSONLayersRef.current = []; // Reset the list of previous layers
-            // Highlight the clicked layer
+          });
+          previousGeoJSONLayersRef.current = []; // Reset the list of previous layers
+          // Highlight the clicked layer
+          setTimeout(() => {
+            geoJSONLayer.setStyle({
+              color: 'yellow', // Color for the border
+              weight: 6, // Increase border width to make it visible
+            });
+          }, 0);
+
+          previousGeoJSONLayersRef.current = [geoJSONLayer];
+        } else {
+          // If multiPolygonSelectRef.current is true, just highlight the clicked layer
+
+          // if the current clicked layer is already in the list of previous layers,
+          // then remove it from the previous one and turn it blue
+
+          if (previousGeoJSONLayersRef.current.includes(geoJSONLayer)) {
+            geoJSONLayer.setStyle({
+              color: 'blue', // Make borders transparent initially
+              weight: 1,
+            });
+            previousGeoJSONLayersRef.current =
+              previousGeoJSONLayersRef.current.filter(
+                (layer) => layer !== geoJSONLayer
+              );
+          } else {
             setTimeout(() => {
               geoJSONLayer.setStyle({
                 color: 'yellow', // Color for the border
@@ -171,32 +182,7 @@ function Map() {
               });
             }, 0);
 
-            previousGeoJSONLayersRef.current = [geoJSONLayer];
-          } else {
-            // If multiPolygonSelectRef.current is true, just highlight the clicked layer
-
-            // if the current clicked layer is already in the list of previous layers,
-            // then remove it from the previous one and turn it blue
-
-            if (previousGeoJSONLayersRef.current.includes(geoJSONLayer)) {
-              geoJSONLayer.setStyle({
-                color: 'blue', // Make borders transparent initially
-                weight: 1,
-              });
-              previousGeoJSONLayersRef.current =
-                previousGeoJSONLayersRef.current.filter(
-                  (layer) => layer !== geoJSONLayer
-                );
-            } else {
-              setTimeout(() => {
-                geoJSONLayer.setStyle({
-                  color: 'yellow', // Color for the border
-                  weight: 6, // Increase border width to make it visible
-                });
-              }, 0);
-
-              previousGeoJSONLayersRef.current.push(geoJSONLayer);
-            }
+            previousGeoJSONLayersRef.current.push(geoJSONLayer);
           }
         }
       },
@@ -318,7 +304,6 @@ function Map() {
           bjoernTeig={bjoernTeig}
           knutTeig={knutTeig}
           akselTeig={akselTeig}
-          clickedOnNotBestandRef={clickedOnNotBestandRef}
           selectedVectorFeatureRef={selectedVectorFeatureRef}
           selectedForest={selectedForest}
           setDeselectPolygons={setDeselectPolygons}

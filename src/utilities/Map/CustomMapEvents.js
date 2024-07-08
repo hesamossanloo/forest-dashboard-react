@@ -26,7 +26,6 @@ CustomMapEvents.propTypes = {
   }).isRequired,
   setActiveOverlay: PropTypes.func.isRequired,
   setDeselectPolygons: PropTypes.func.isRequired,
-  clickedOnNotBestandRef: PropTypes.object.isRequired,
   selectedVectorFeatureRef: PropTypes.object.isRequired,
   multiPolygonSelect: PropTypes.bool.isRequired,
   deselectPolygons: PropTypes.bool.isRequired,
@@ -42,7 +41,6 @@ export default function CustomMapEvents(props) {
     activeOverlay,
     setActiveOverlay,
     setDeselectPolygons,
-    clickedOnNotBestandRef,
     selectedVectorFeatureRef,
     madsTeig,
     bjoernTeig,
@@ -103,7 +101,7 @@ export default function CustomMapEvents(props) {
           e.latlng,
           chosenForest.features[0].geometry.coordinates
         ) &&
-        (clickedOnNotBestandRef.current || !clickedOnHKGeoJSON)
+        !clickedOnHKGeoJSON
       ) {
         L.popup({ interactive: true })
           .setLatLng(e.latlng)
@@ -113,7 +111,6 @@ export default function CustomMapEvents(props) {
           .openOn(map);
       }
       if (
-        !clickedOnNotBestandRef.current &&
         (activeOverlay['Stands'] || activeOverlay['Skogbruksplan']) &&
         clickedOnHKGeoJSON
       ) {
