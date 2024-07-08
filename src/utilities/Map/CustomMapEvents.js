@@ -14,6 +14,7 @@ import {
   calculateBoundingBox,
   isPointInsidePolygon,
   isPointInsideTeig,
+  openHKPopupWithContent,
   WFSFeatureLayerNamefromXML,
 } from './utililtyFunctions';
 
@@ -138,43 +139,47 @@ export default function CustomMapEvents(props) {
             activeOverlay['MIS'] &&
             MIS_BESTAND_IDs.indexOf(teigBestNrLastSelected) > -1
           ) {
-            // Preparing the request to GetFeatreInfo for MIS WMS
-            // The NIBIO WMS expects the Query params to follow certain patterns. After
-            // analysing how QGIS made the WMS call, reverse engineered the call
-            // and here we are building one of those params, i.e. BBOX, size.x, size.y and the CRS
-            const { CRS, size, BBOX } = calculateBoundingBox(map);
-            // The params should be in uppercase, unless the WMS won't accept it
-            const params = {
-              ...nibioGetFeatInfoMISBaseParams,
-              BBOX,
-              CRS,
-              WIDTH: size.x,
-              HEIGHT: size.y,
-              I: Math.round(e.containerPoint.x),
-              J: Math.round(e.containerPoint.y),
-            };
-            const url = `https://wms.nibio.no/cgi-bin/mis?${new URLSearchParams(params).toString()}`;
-            const response = await fetch(url);
-            const data = await response.text();
-            const WMSFeatureInfoRaw = new WMSGetFeatureInfo();
-            const layerNames = WFSFeatureLayerNamefromXML(data);
-            MISClickedFeatureInfos = WMSFeatureInfoRaw.readFeatures(data);
-            // Assuming layerNames is an array of strings and MISClickedFeatureInfos is an array of objects
-            if (layerNames.length === MISClickedFeatureInfos.length) {
-              // Loop through each feature info
-              MISClickedFeatureInfos.forEach((featureInfo, index) => {
-                // Assign the corresponding layer name from layerNames to this feature info
-                // Assuming you're adding a new property 'layerName' to each feature info object
-                featureInfo.layerName = layerNames[index];
-              });
-            } else {
-              console.error(
-                'The count of layerNames does not match the count of MISClickedFeatureInfos'
-              );
+            if (!selectedFeatures.includes(selectedVectorFeatureRef.current)) {
+              openHKPopupWithContent('Loading...', e, map);
+              // Preparing the request to GetFeatreInfo for MIS WMS
+              // The NIBIO WMS expects the Query params to follow certain patterns. After
+              // analysing how QGIS made the WMS call, reverse engineered the call
+              // and here we are building one of those params, i.e. BBOX, size.x, size.y and the CRS
+              const { CRS, size, BBOX } = calculateBoundingBox(map);
+              // The params should be in uppercase, unless the WMS won't accept it
+              const params = {
+                ...nibioGetFeatInfoMISBaseParams,
+                BBOX,
+                CRS,
+                WIDTH: size.x,
+                HEIGHT: size.y,
+                I: Math.round(e.containerPoint.x),
+                J: Math.round(e.containerPoint.y),
+              };
+              const url = `https://wms.nibio.no/cgi-bin/mis?${new URLSearchParams(params).toString()}`;
+              const response = await fetch(url);
+              const data = await response.text();
+              const WMSFeatureInfoRaw = new WMSGetFeatureInfo();
+              const layerNames = WFSFeatureLayerNamefromXML(data);
+              MISClickedFeatureInfos = WMSFeatureInfoRaw.readFeatures(data);
+              // Assuming layerNames is an array of strings and MISClickedFeatureInfos is an array of objects
+              if (layerNames.length === MISClickedFeatureInfos.length) {
+                // Loop through each feature info
+                MISClickedFeatureInfos.forEach((featureInfo, index) => {
+                  // Assign the corresponding layer name from layerNames to this feature info
+                  // Assuming you're adding a new property 'layerName' to each feature info object
+                  featureInfo.layerName = layerNames[index];
+                });
+              } else {
+                console.error(
+                  'The count of layerNames does not match the count of MISClickedFeatureInfos'
+                );
+              }
             }
           }
 
           // Reset selected features if not in multiPolygonSwitchIsON mode
+          // In Single mode
           if (!multiPolygonSwitchIsON) {
             // Check if the clicked polygon was already selected
             if (
@@ -207,7 +212,7 @@ export default function CustomMapEvents(props) {
               setSelectedFeatures([]);
             }
           } else {
-            // Multi select is true
+            // In Multi mode
 
             // Check if the clicked polygon was already selected
             if (
