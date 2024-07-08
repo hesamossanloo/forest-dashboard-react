@@ -176,19 +176,35 @@ export default function CustomMapEvents(props) {
 
           // Reset selected features if not in multiPolygonSelect mode
           if (!multiPolygonSelect) {
-            setSelectedFeatures([selectedVectorFeatureRef.current]); // Only the last selected feature is kept
-            if (!isFetchingAirtableRecords && airTableBestandInfos.length > 0) {
-              // Ensure data is loaded
-              SkogbrukWMSFeaturesHandler(
-                e,
-                [selectedVectorFeatureRef.current],
-                map,
-                multiPolygonSelect,
-                MISClickedFeatureInfos,
-                airTableBestandInfos,
-                airTableTooltips,
-                userSpeciesPrices
-              );
+            // Check if the clicked polygon was already selected
+            if (
+              teigBestNrLastSelected &&
+              !selectedFeatures.some(
+                (feature) =>
+                  feature.properties?.teig_best_nr === teigBestNrLastSelected
+              )
+            ) {
+              // If NOT the add to selected features for multi selection mode
+              setSelectedFeatures([selectedVectorFeatureRef.current]);
+              if (
+                !isFetchingAirtableRecords &&
+                airTableBestandInfos.length > 0
+              ) {
+                // Ensure data is loaded
+                SkogbrukWMSFeaturesHandler(
+                  e,
+                  [selectedVectorFeatureRef.current],
+                  map,
+                  multiPolygonSelect,
+                  MISClickedFeatureInfos,
+                  airTableBestandInfos,
+                  airTableTooltips,
+                  userSpeciesPrices
+                );
+              }
+            } else {
+              // If YES, then removed from the selectedFeatures
+              setSelectedFeatures([]);
             }
           } else {
             // Multi select is true

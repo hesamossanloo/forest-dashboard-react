@@ -143,22 +143,31 @@ function Map() {
         }
         // If multiPolygonSelectRef.current is false, unhighlight the previous layer
         if (!multiPolygonSelectRef.current) {
-          previousGeoJSONLayersRef.current.forEach((layer) => {
-            layer.setStyle({
-              color: 'blue', // Make borders transparent initially
-              weight: 1,
+          if (previousGeoJSONLayersRef.current.includes(geoJSONLayer)) {
+            previousGeoJSONLayersRef.current.forEach((layer) => {
+              layer.setStyle({
+                color: 'blue', // Make borders transparent initially
+                weight: 1,
+              });
             });
-          });
-          previousGeoJSONLayersRef.current = []; // Reset the list of previous layers
-          // Highlight the clicked layer
-          setTimeout(() => {
-            geoJSONLayer.setStyle({
-              color: 'yellow', // Color for the border
-              weight: 6, // Increase border width to make it visible
+            previousGeoJSONLayersRef.current = [];
+          } else {
+            previousGeoJSONLayersRef.current.forEach((layer) => {
+              layer.setStyle({
+                color: 'blue', // Make borders transparent initially
+                weight: 1,
+              });
             });
-          }, 0);
-
-          previousGeoJSONLayersRef.current = [geoJSONLayer];
+            previousGeoJSONLayersRef.current = []; // Reset the list of previous layers
+            // Highlight the clicked layer
+            setTimeout(() => {
+              geoJSONLayer.setStyle({
+                color: 'yellow', // Color for the border
+                weight: 6, // Increase border width to make it visible
+              });
+            }, 0);
+            previousGeoJSONLayersRef.current = [geoJSONLayer];
+          }
         } else {
           // If multiPolygonSelectRef.current is true, just highlight the clicked layer
 
