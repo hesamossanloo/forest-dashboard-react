@@ -95,7 +95,7 @@ const PriceForm = () => {
     }));
   };
 
-  if (authLoading && isFetchingAirtableRecords) {
+  if (authLoading || isFetchingAirtableRecords || !formData) {
     return <div>Loading...</div>;
   }
 

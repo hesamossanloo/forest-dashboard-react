@@ -29,20 +29,18 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
-      // if (user) {
-      //   // Fetch prices after successful login
-      //   const userDocRef = doc(db, 'users', user.uid);
-      //   getDoc(userDocRef).then((docSnap) => {
-      //     if (docSnap.exists()) {
-      //       const userData = docSnap.data();
-      //       if (userData.prices) {
-      //         console.log('User prices1:', userData.prices);
-      //         setUserSpeciesPrices(userData.prices); // Set prices in the context
-      //       }
-      //       console.log('User prices2:', userSpeciesPrices);
-      //     }
-      //   });
-      // }
+      if (user) {
+        // Fetch prices after successful login
+        const userDocRef = doc(db, 'users', user.uid);
+        getDoc(userDocRef).then((docSnap) => {
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            if (userData.prices) {
+              setUserSpeciesPrices(userData.prices); // Set prices in the context
+            }
+          }
+        });
+      }
       setAuthLoading(false);
     });
     return unsubscribe;
