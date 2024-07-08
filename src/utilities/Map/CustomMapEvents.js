@@ -129,14 +129,11 @@ export default function CustomMapEvents(props) {
           selectedVectorFeatureRef.current.properties
         ) {
           let MISClickedFeatureInfos;
-          // In case the selected feature is already in the array,
-          // which means the user has clicked on it before, we don't
-          // need to add it to the array. That's why we check if the teigBestNr
-          // already exists or not!
-          // const teigBestNrLastSelected = newFeatures[0]?.properties?.teig_best_nr;
 
           const teigBestNrLastSelected =
             selectedVectorFeatureRef.current.properties.teig_best_nr;
+
+          // Handle MIS Layer (Forbidden areas WMS)
           if (
             activeOverlay['MIS'] &&
             MIS_BESTAND_IDs.indexOf(teigBestNrLastSelected) > -1
@@ -176,6 +173,7 @@ export default function CustomMapEvents(props) {
               );
             }
           }
+
           // Reset selected features if not in multiPolygonSelect mode
           if (!multiPolygonSelect) {
             setSelectedFeatures([selectedVectorFeatureRef.current]); // Only the last selected feature is kept
@@ -195,7 +193,7 @@ export default function CustomMapEvents(props) {
           } else {
             // Multi select is true
 
-            // Check if the clicked polygon was already selected and removed from the selectedFeatures
+            // Check if the clicked polygon was already selected
             if (
               teigBestNrLastSelected &&
               !selectedFeatures.some(
@@ -203,7 +201,7 @@ export default function CustomMapEvents(props) {
                   feature.properties?.teig_best_nr === teigBestNrLastSelected
               )
             ) {
-              // Add to selected features for multi selection mode
+              // If NOT the add to selected features for multi selection mode
               setSelectedFeatures([
                 ...selectedFeatures,
                 selectedVectorFeatureRef.current,
@@ -221,7 +219,7 @@ export default function CustomMapEvents(props) {
                 );
               }
             } else {
-              // Check if the clicked polygon was already selected and removed from the selectedFeatures
+              // If YES, then removed from the selectedFeatures
 
               // Remove the clicked polygon from the selectedFeatures
               const newSelectedFeatures = selectedFeatures.filter(
