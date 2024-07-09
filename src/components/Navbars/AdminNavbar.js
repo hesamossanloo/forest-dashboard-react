@@ -21,11 +21,15 @@ import { useEffect, useState } from 'react';
 import classNames from 'classnames';
 
 // reactstrap components
+import FeedbackForm from 'components/FeedbackForm/FeedbackForm';
 import { useAuth } from 'contexts/AuthContext';
+import { FiMessageSquare } from 'react-icons/fi';
 import {
   Button,
   Collapse,
   Container,
+  Modal,
+  ModalBody,
   Nav,
   Navbar,
   NavbarBrand,
@@ -33,11 +37,16 @@ import {
 } from 'reactstrap';
 
 function AdminNavbar(props) {
+  const [modalOpen, setModalOpen] = useState(false);
+
   const [collapseOpen, setcollapseOpen] = useState(false);
   const [isMapInUrl, setIsMapInUrl] = useState(false);
   const [color, setcolor] = useState('navbar-map');
   const { currentUser, logout } = useAuth();
 
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+  };
   useEffect(() => {
     window.addEventListener('resize', updateColor);
     // Specify how to clean up after this effect:
@@ -176,6 +185,7 @@ function AdminNavbar(props) {
               {currentUser ? (
                 <>
                   <span className="navbar-text mr-3">{currentUser.email}</span>
+
                   <Button color="danger" onClick={handleLogout}>
                     Logout
                   </Button>
@@ -184,6 +194,16 @@ function AdminNavbar(props) {
                 <span className="navbar-text mr-3">Not logged in</span>
               )}
               <li className="separator d-lg-none" />
+              <Button color="info" onClick={toggleModal}>
+                <FiMessageSquare />
+              </Button>
+              <Modal isOpen={modalOpen} toggle={toggleModal}>
+                <ModalBody
+                  style={{ backgroundColor: '#1e1e2f', border: 'none' }}
+                >
+                  <FeedbackForm />
+                </ModalBody>
+              </Modal>
             </Nav>
           </Collapse>
         </Container>
