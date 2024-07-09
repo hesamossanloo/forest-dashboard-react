@@ -5,7 +5,7 @@ import AdminNavbar from 'components/Navbars/AdminNavbar.js';
 import Sidebar from 'components/Sidebar/Sidebar.js';
 import { BackgroundColorContext } from 'contexts/BackgroundColorContext';
 import PerfectScrollbar from 'perfect-scrollbar';
-import React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import routes from 'routes.js';
 
@@ -13,12 +13,12 @@ var ps;
 
 function Admin(props) {
   const location = useLocation();
-  const mainPanelRef = React.useRef(null);
-  const [sidebarOpened, setsidebarOpened] = React.useState(
+  const mainPanelRef = useRef(null);
+  const [sidebarOpened, setsidebarOpened] = useState(
     document.documentElement.className.indexOf('nav-open') !== -1
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (navigator.platform.indexOf('Win') > -1) {
       document.documentElement.className += ' perfect-scrollbar-on';
       document.documentElement.classList.remove('perfect-scrollbar-off');
@@ -39,7 +39,7 @@ function Admin(props) {
     };
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (navigator.platform.indexOf('Win') > -1) {
       let tables = document.querySelectorAll('.table-responsive');
       for (let i = 0; i < tables.length; i++) {
@@ -82,7 +82,7 @@ function Admin(props) {
   return (
     <BackgroundColorContext.Consumer>
       {({ color, changeColor }) => (
-        <React.Fragment>
+        <>
           <div className="wrapper">
             <Sidebar
               routes={routes}
@@ -109,7 +109,7 @@ function Admin(props) {
               {location.pathname === '/admin/map' ? null : <Footer fluid />}
             </div>
           </div>
-        </React.Fragment>
+        </>
       )}
     </BackgroundColorContext.Consumer>
   );
