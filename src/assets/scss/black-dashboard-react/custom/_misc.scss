@@ -26,30 +26,53 @@ a[data-toggle='collapse'][aria-expanded='true'] .caret,
   @include rotate-180();
 }
 
-/* Add this to your CSS file */
+/* Spinner Wrapper */
 .spinner {
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  width: 36px;
-  height: 36px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border-left-color: #09f;
-  animation: spin 1s ease infinite;
+  background: conic-gradient(#818962, #ffc107, #818962);
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - 10px),
+    black calc(100% - 10px)
+  );
+  animation: spin 1s linear infinite;
 }
 
+/* Keyframes for spinning effect */
 @keyframes spin {
-  0% {
+  from {
     transform: rotate(0deg);
   }
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
+// .spinner {
+//   border: 4px solid rgba(0, 0, 0, 0.1);
+//   width: 36px;
+//   height: 36px;
+//   border-radius: 50%;
+//   border-left-color: #09f;
+//   animation: spin 1s ease infinite;
+// }
+
+// @keyframes spin {
+//   0% {
+//     transform: rotate(0deg);
+//   }
+//   100% {
+//     transform: rotate(360deg);
+//   }
+// }
 
 .spinner-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* This ensures that the container takes the full viewport height */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: 'translate(-50%, -50%)';
+  z-index: 1000;
 }
 
 .caret {

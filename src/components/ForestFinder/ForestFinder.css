@@ -1,0 +1,75 @@
+/* Add this CSS to your stylesheet */
+.forestFinderContainer {
+  padding: 20px;
+}
+
+.tag {
+  display: inline-flex; /* Display tags inline and use flex for internal alignment */
+  align-items: center; /* Align items vertically in the center */
+  padding: 5px 10px; /* Add some padding inside the tag */
+  margin: 5px; /* Add some space between tags */
+  background-color: #f0f0f0; /* Light grey background */
+  border-radius: 20px; /* Rounded edges for the ellipse shape */
+  font-size: 14px; /* Adjust font size as needed */
+}
+
+.tag > span {
+  margin-right: 10px; /* Space between the text and the X button */
+}
+
+.tag > button {
+  display: inline-block; /* Ensure the button is inline */
+  width: 20px; /* Circular shape */
+  height: 20px; /* Circular shape */
+  line-height: 20px; /* Center the "X" vertically */
+  text-align: center; /* Center the "X" horizontally */
+  padding: 0; /* Remove padding */
+  border-radius: 50%; /* Make it circular */
+  background-color: #cc0000; /* Red background for the button */
+  color: white; /* White text color */
+  border: none; /* Remove border */
+  cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.mapContainer {
+  height: 400px; /* Adjust based on your preference */
+}
+
+.leaflet-container {
+  position: inherit;
+  height: 100%;
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  align-items: center; /* Aligns items vertically in the center */
+}
+
+.input-group > * {
+  margin-right: 8px; /* Adds some space between the input and the button */
+}
+
+.input-group,
+.form-group {
+  margin-bottom: 0;
+}
+.modal-footer {
+  padding: 24px 24px 16px 24px;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: 300px;
+    margin: 1.75rem auto;
+  }
+}
+
+.modal-content .modal-header button {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  outline: 0;
+  padding: 1rem;
+  margin: -1rem -1rem -1rem auto;
+}

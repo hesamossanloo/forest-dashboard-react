@@ -2,6 +2,34 @@ const airtableBestandTableURL = `https://api.airtable.com/v0/${process.env.REACT
 const airtablePricesTableURL = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/${process.env.REACT_APP_AIRTABLE_PRICES_N_COST_TABLE_ID}`;
 const airtableTooltipsTableURL = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/${process.env.REACT_APP_AIRTABLE_TOOLTIPS_TABLE_ID}`;
 
+const fetchAirtablePrices = async () => {
+  try {
+    const records = await fetchPricesRecords();
+    // map the records to this format const initialPrices = {
+    //   granSagtommerPrice: '',
+    //   granMassevirkePrice: '',
+    //   furuSagtommerPrice: '',
+    //   furuMassevirkePrice: '',
+    //   lauvSagtommerPrice: '',
+    //   lauvMassevirkePrice: '',
+    //   hogstUtkPrice: '',
+    // };
+    const prices = records.reduce((acc, record) => {
+      const { specie, price_saw_wood, price_pulp_wood, cost_harvest_per_m3 } =
+        record.fields;
+      return {
+        ...acc,
+        [`${specie}SagtommerPrice`]: price_saw_wood || 0,
+        [`${specie}MassevirkePrice`]: price_pulp_wood || 0,
+        [`hogstUtkPrice`]: cost_harvest_per_m3 || 0,
+      };
+    }, {});
+    return prices;
+  } catch (error) {
+    console.error('Error fetching Prices records:', error);
+  }
+};
+
 const fetchAirtableRecords = async (url) => {
   let allRecords = [];
   let offset;
@@ -31,4 +59,9 @@ const fetchPricesRecords = () => fetchAirtableRecords(airtablePricesTableURL);
 const fetchTooltipsRecords = () =>
   fetchAirtableRecords(airtableTooltipsTableURL);
 
-export { fetchBestandRecords, fetchPricesRecords, fetchTooltipsRecords };
+export {
+  fetchAirtablePrices,
+  fetchBestandRecords,
+  fetchPricesRecords,
+  fetchTooltipsRecords,
+};

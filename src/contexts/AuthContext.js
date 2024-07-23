@@ -13,9 +13,9 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { fetchPricesRecords } from 'services/airtable';
+import { fetchAirtablePrices } from 'services/airtable';
+import { auth, db } from 'services/firebase';
 import { initialPrices } from 'variables/forest';
-import { auth, db } from '../services/firebase';
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
@@ -25,30 +25,52 @@ export const AuthProvider = ({ children }) => {
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [userSpeciesPrices, setUserSpeciesPrices] = useState(initialPrices); // New state for prices
+
   useEffect(() => {
     setAuthLoading(true);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
         // Fetch prices after successful login
         const userDocRef = doc(db, 'users', user.uid);
-        getDoc(userDocRef).then((docSnap) => {
-          if (docSnap.exists()) {
-            const userData = docSnap.data();
-            if (userData.prices) {
-              setUserSpeciesPrices(userData.prices); // Set prices in the context
-            }
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.prices) {
+            setUserSpeciesPrices(userData.prices); // Set prices in the context
           }
-        });
+          setCurrentUser({
+            ...user,
+            FBUser: { ...userData },
+          });
+        }
+      } else {
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     });
+    setAuthLoading(false);
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Provide authError and a method to clear it to the context consumers
   const clearError = () => setAuthError(null);
+
+  const updateFBUser = async (user) => {
+    if (!currentUser) return; // Guard clause if there's no logged-in user
+
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        // set doc for the new user
+        await setDoc(userDocRef, user, { merge: true });
+      }
+    } catch (error) {
+      setAuthError(error.message);
+      console.error('Error updating user: ', error);
+    }
+  };
 
   const updateUserSpeciesPrices = async (newPrices) => {
     if (!currentUser) return; // Guard clause if there's no logged-in user
@@ -83,41 +105,15 @@ export const AuthProvider = ({ children }) => {
         lastName,
         email: user.email,
       });
+      setAuthLoading(false);
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing up:', error);
       setAuthError(error.message);
-    } finally {
       setAuthLoading(false);
     }
   };
-  const fetchAirtablePrices = async () => {
-    try {
-      const records = await fetchPricesRecords();
-      // map the records to this format const initialPrices = {
-      //   granSagtommerPrice: '',
-      //   granMassevirkePrice: '',
-      //   furuSagtommerPrice: '',
-      //   furuMassevirkePrice: '',
-      //   lauvSagtommerPrice: '',
-      //   lauvMassevirkePrice: '',
-      //   hogstUtkPrice: '',
-      // };
-      const prices = records.reduce((acc, record) => {
-        const { specie, price_saw_wood, price_pulp_wood, cost_harvest_per_m3 } =
-          record.fields;
-        return {
-          ...acc,
-          [`${specie}SagtommerPrice`]: price_saw_wood || 0,
-          [`${specie}MassevirkePrice`]: price_pulp_wood || 0,
-          [`hogstUtkPrice`]: cost_harvest_per_m3 || 0,
-        };
-      }, {});
-      return prices;
-    } catch (error) {
-      console.error('Error fetching Prices records:', error);
-    }
-  };
+
   const signIn = async (email, password, rememberMe) => {
     setAuthLoading(true); // Set loading to true at the start of the function
     try {
@@ -148,18 +144,26 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
+        setCurrentUser({
+          ...user,
+          FBUser: { ...userData, prices: updatedPrices },
+        });
       } else {
         // If the user document doesn't exist, create it with Airtable prices
         await setDoc(userDocRef, { prices: airtablePrices }, { merge: true });
         setUserSpeciesPrices(airtablePrices);
+        setCurrentUser({
+          ...user,
+          FBUser: { email, prices: airtablePrices },
+        });
       }
-
+      setAuthLoading(false);
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing in:', error);
       setAuthError(error.message);
-    } finally {
       setAuthLoading(false);
+      return { wasSuccessful: false, error: error.message }; // Indicate failure and return early
     }
   };
 
@@ -201,14 +205,17 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
+        setCurrentUser({
+          ...user,
+          FBUser: { ...userData, prices: updatedPrices },
+        });
       }
-
+      setAuthLoading(false);
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing in with Google:', error);
-      setAuthError(error.message);
-    } finally {
       setAuthLoading(false);
+      setAuthError(error.message);
     }
   };
 
@@ -229,6 +236,7 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     userSpeciesPrices,
     updateUserSpeciesPrices,
+    updateFBUser,
     signUp,
     signIn,
     signInWithGoogle,
