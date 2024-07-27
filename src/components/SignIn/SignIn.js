@@ -34,7 +34,7 @@ export default function SignIn() {
       if (currentUser.FBUser && currentUser.FBUser.forests) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
-        navigate('/test'); // Navigate to the dashboard
+        navigate('/forest'); // Navigate to the dashboard
       }
     }
     if (!currentUser) {
@@ -58,7 +58,7 @@ export default function SignIn() {
       if (currentUser.FBUser && currentUser.FBUser.forests) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
-        navigate('/test'); // Navigate to the dashboard
+        navigate('/forest'); // Navigate to the dashboard
       }
     }
   };
@@ -69,7 +69,7 @@ export default function SignIn() {
       if (currentUser && currentUser.FBUser && currentUser.FBUser.forests) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
-        navigate('/test'); // Navigate to the dashboard
+        navigate('/forest'); // Navigate to the dashboard
       }
     }
   };

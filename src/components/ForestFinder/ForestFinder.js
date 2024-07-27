@@ -113,7 +113,7 @@ const ForestFinder = () => {
       setError('');
       setIsLoading(true);
       fetch(
-        'https://kjpbus56uh.execute-api.eu-north-1.amazonaws.com/dev/filter',
+        'https://wdqjuf6en5.execute-api.eu-north-1.amazonaws.com/Prod/filter',
         {
           method: 'POST',
           headers: {
@@ -121,6 +121,7 @@ const ForestFinder = () => {
           },
           body: JSON.stringify({
             inputs: {
+              name: currentUser.FBUser.email,
               kommunenummer: kommunenummerList[0],
               matrikkelnummertekst: matrikkelnummerList.flat(),
             },

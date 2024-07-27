@@ -3,6 +3,7 @@ import 'assets/css/nucleo-icons.css';
 import 'assets/demo/demo.css';
 import 'assets/scss/black-dashboard-react.scss';
 import ForestFinder from 'components/ForestFinder/ForestFinder';
+import ForestProcessor from 'components/ForestProcessor/ForestProcessor';
 import ForgotPassword from 'components/ForgotPassword/ForgotPassword';
 import PrivacyPolicy from 'components/PrivacyPolicy/PrivacyPolicy';
 import PrivateRoute from 'components/PrivateRoute/PrivateRoute';
@@ -40,7 +41,8 @@ root.render(
             <Route path="/signup" element={<SignUp />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/test" element={<ForestFinder />} />
+            <Route path="/forest" element={<ForestFinder />} />
+            <Route path="/test" element={<ForestProcessor />} />
             <Route path="*" element={<SignIn />} />
           </Routes>
         </BrowserRouter>
