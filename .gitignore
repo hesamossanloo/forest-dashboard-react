@@ -14,3 +14,4 @@ skogapp-dashboard.code-workspace
 .netlify
 *.aux.xml
 credentials/client_secret_1000045069276-aibde34q6b1fucdu3m8uckj061i7gkku.apps.googleusercontent.com.json
+src/assets/data/QGIS/mads/mads-teig.geojson
