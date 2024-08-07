@@ -121,7 +121,7 @@ const ForestFinder = () => {
           },
           body: JSON.stringify({
             inputs: {
-              name: currentUser.FBUser.email,
+              forestID: currentUser.uid,
               kommunenummer: kommunenummerList[0],
               matrikkelnummertekst: matrikkelnummerList.flat(),
             },
