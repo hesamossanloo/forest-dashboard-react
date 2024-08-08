@@ -1,413 +1,104 @@
-// a simple react compoennt that return a div where i can assign css animation
-
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useAuth } from 'contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { checkFileExists, downloadS3File } from 'services/AWS';
+import { S3_CUT_FOLDER_NAME, S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
 import './ForestProcessor.scss';
 
+import { Buffer } from 'buffer';
+import ForestScene from 'components/ForestScene/ForestScene';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+
 const ForestProcessor = () => {
+  const [fileExists, setFileExists] = useState(false);
+  const [forestHKPNG, setForestHKPNG] = useState(null);
+  const [geoJson, setGeoJson] = useState(null);
+
+  // get the current user uid
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    // Check if the file exists every 5 seconds
+    const interval = setInterval(async () => {
+      if (currentUser && !fileExists) {
+        const forestID = currentUser.uid;
+        const exists = await checkFileExists(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.svg`
+        );
+        setFileExists(exists);
+      }
+    }, 1000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [fileExists, currentUser]);
+
+  // if file is ready download it from s3 and save it under the folder assets/data
+  useEffect(() => {
+    const downloadFile = async () => {
+      const forestID = currentUser.uid;
+      const data = await downloadS3File(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+      );
+      if (data) {
+        const parsedJSON = JSON.parse(currentUser.FBUser.forests[0]);
+        setGeoJson(parsedJSON);
+
+        // Convert the downloaded data to a base64 URL
+        const base64Data = Buffer.from(data.Body).toString('base64');
+        const imageUrl = `data:image/png;base64,${base64Data}`;
+        setForestHKPNG(imageUrl);
+      }
+    };
+    if (fileExists) {
+      downloadFile();
+    }
+  }, [fileExists, currentUser]);
+
+  // eslint-disable-next-line react/prop-types
+  const MapComponent = ({ geoJson }) => {
+    const map = useMap();
+
+    useEffect(() => {
+      if (geoJson) {
+        const geoJsonLayer = L.geoJSON(geoJson).addTo(map);
+        map.flyToBounds(geoJsonLayer.getBounds());
+
+        if (forestHKPNG) {
+          L.imageOverlay(forestHKPNG, geoJsonLayer.getBounds(), {
+            opacity: 0.5,
+          }).addTo(map);
+        }
+      }
+    }, [geoJson, map, forestHKPNG]);
+
+    return null;
+  };
   return (
     <>
-      <div className="title">
-        <h1>Processing your forest</h1>
-      </div>
-      <div className="container">
-        <div className="birds front">
-          <div className="bird b1">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
+      {fileExists && currentUser && forestHKPNG ? (
+        <>
+          <div className="title">
+            <h1>Your Skogbruksplan Cut is ready!</h1>
           </div>
-          <div className="bird b2">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
+          <div className="mapContainer">
+            <MapContainer center={[59.9139, 10.7522]} zoom={13}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <MapComponent geoJson={geoJson} />
+            </MapContainer>
           </div>
-          <div className="bird b3">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
+        </>
+      ) : (
+        <>
+          <div className="title">
+            <h1>Please wait while we process your forest...</h1>
           </div>
-          <div className="bird b4">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b5">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b6">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b7">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b8">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b9">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b10">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b11">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b12">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="birds back">
-          <div className="bird b1">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b2">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b3">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b4">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b5">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b6">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b7">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b8">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b9">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b10">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b11">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-          <div className="bird b12">
-            <div className="body"></div>
-            <div className="wing1">
-              <div className="wing2">
-                <div className="wing3"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="cloud big">
-          <div className="circle c0"></div>
-          <div className="circle c1"></div>
-          <div className="circle c2"></div>
-          <div className="circle c3"></div>
-          <div className="circle c4"></div>
-          <div className="circle c5"></div>
-          <div className="circle c6"></div>
-          <div className="circle c7"></div>
-          <div className="circle c8"></div>
-        </div>
-        <div className="cloud small">
-          <div className="circle c0"></div>
-          <div className="circle c1"></div>
-          <div className="circle c2"></div>
-          <div className="circle c3"></div>
-          <div className="circle c4"></div>
-          <div className="circle c5"></div>
-          <div className="circle c6"></div>
-          <div className="circle c7"></div>
-          <div className="circle c8"></div>
-        </div>
-        <div className="mountain">
-          <div className="backdrop"></div>
-          <div className="zig zag0"></div>
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-          <div className="zig zag1"></div>
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-          <div className="zig zag2"></div>
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-          <div className="zig zag3"></div>
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-          <div className="zig zag4"></div>
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="range">
-          <div className="r1"></div>
-          <div className="r2"></div>
-          <div className="r3"></div>
-          <div className="r4"></div>
-          <div className="r5"></div>
-          <div className="r6"></div>
-          <div className="r7"></div>
-        </div>
-        <div className="tree treeBack tree1">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree2">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree3">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree4">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree5">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree6">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree7">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeBack tree8">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tower">
-          <div className="shadow"></div>
-          <div className="flagPole"></div>
-          <div className="roof1"></div>
-          <div className="roof2"></div>
-          <div className="wall">
-            <div className="w1"></div>
-            <div className="w2"></div>
-            <div className="w3"></div>
-            <div className="w4"></div>
-            <div className="w5"></div>
-          </div>
-          <div className="legs">
-            <div className="left"></div>
-            <div className="right"></div>
-            <div className="support1">
-              <div className="criss"></div>
-              <div className="cross"></div>
-              <div className="flat"></div>
-            </div>
-            <div className="support2">
-              <div className="criss"></div>
-              <div className="cross"></div>
-              <div className="flat"></div>
-            </div>
-          </div>
-          <div className="railing">
-            <div className="top"></div>
-            <div className="bot1"></div>
-            <div className="bot2"></div>
-            <div className="r1"></div>
-            <div className="r2"></div>
-            <div className="r3"></div>
-            <div className="r4"></div>
-            <div className="r5"></div>
-            <div className="r6"></div>
-            <div className="r7"></div>
-            <div className="r8"></div>
-            <div className="r9"></div>
-          </div>
-        </div>
-        <div className="tree treeMid tree1">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeMid tree2">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeMid tree3">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeMid tree4">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeMid tree5">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeFront tree1">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeFront tree2">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeFront tree3">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-        <div className="tree treeFront tree4">
-          <div className="top"></div>
-          <div className="mid"></div>
-          <div className="bot"></div>
-          <div className="base"></div>
-        </div>
-      </div>
+          <ForestScene />
+        </>
+      )}
     </>
   );
 };

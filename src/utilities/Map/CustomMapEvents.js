@@ -30,11 +30,12 @@ CustomMapEvents.propTypes = {
   selectedVectorFeatureRef: PropTypes.object.isRequired,
   multiPolygonSwitchIsON: PropTypes.bool.isRequired,
   deselectPolygons: PropTypes.bool.isRequired,
-  madsTeig: PropTypes.object.isRequired,
-  bjoernTeig: PropTypes.object.isRequired,
-  knutTeig: PropTypes.object.isRequired,
-  akselTeig: PropTypes.object.isRequired,
-  selectedForest: PropTypes.object.isRequired,
+  userForestTeig: PropTypes.object.isRequired,
+  // madsTeig: PropTypes.object.isRequired,
+  // bjoernTeig: PropTypes.object.isRequired,
+  // knutTeig: PropTypes.object.isRequired,
+  // akselTeig: PropTypes.object.isRequired,
+  // selectedForest: PropTypes.object.isRequired,
 };
 
 export default function CustomMapEvents(props) {
@@ -43,13 +44,14 @@ export default function CustomMapEvents(props) {
     setActiveOverlay,
     setDeselectPolygons,
     selectedVectorFeatureRef,
-    madsTeig,
-    bjoernTeig,
-    knutTeig,
-    akselTeig,
+    userForestTeig,
+    // madsTeig,
+    // bjoernTeig,
+    // knutTeig,
+    // akselTeig,
     multiPolygonSwitchIsON,
     deselectPolygons,
-    selectedForest,
+    // selectedForest,
   } = props;
   const map = useMap();
   const [selectedFeatures, setSelectedFeatures] = useState([]);
@@ -59,9 +61,9 @@ export default function CustomMapEvents(props) {
 
   // Check if the click is within the coordinates of a GeoJSON
   // In this case I am passing in the Mad's forest Teig Polygon
-  const forests = [madsTeig, bjoernTeig, knutTeig, akselTeig];
-  const forestName = selectedForest.name;
-  const chosenForest = forests.find((forest) => forest.name === forestName);
+  // const forests = [madsTeig, bjoernTeig, knutTeig, akselTeig];
+  // const forestName = selectedForest.name;
+  // const chosenForest = forests.find((forest) => forest.name === forestName);
 
   useEffect(() => {
     if (deselectPolygons) {
@@ -101,7 +103,7 @@ export default function CustomMapEvents(props) {
       if (
         isPointInsideTeig(
           e.latlng,
-          chosenForest.features[0].geometry.coordinates
+          userForestTeig.features[0].geometry.coordinates
         ) &&
         !clickedOnHKGeoJSON
       ) {
@@ -122,10 +124,10 @@ export default function CustomMapEvents(props) {
         map.closePopup();
 
         if (
-          chosenForest &&
+          userForestTeig &&
           isPointInsideTeig(
             e.latlng,
-            chosenForest.features[0].geometry.coordinates
+            userForestTeig.features[0].geometry.coordinates
           ) &&
           selectedVectorFeatureRef.current &&
           selectedVectorFeatureRef.current.properties

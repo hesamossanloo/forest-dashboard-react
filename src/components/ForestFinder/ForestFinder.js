@@ -1,7 +1,7 @@
 import { useAuth } from 'contexts/AuthContext';
+import { useEffect, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import Lottie from 'react-lottie';
 import { Link, useNavigate } from 'react-router-dom';
@@ -55,7 +55,7 @@ const ForestFinder = () => {
   const [error, setError] = useState('');
   const [geoJson, setGeoJson] = useState(null);
 
-  // if udrt is not logged in go to sigin page
+  // if user is not logged in redirect to sigin page
   useEffect(() => {
     if (
       currentUser &&
@@ -113,7 +113,7 @@ const ForestFinder = () => {
       setError('');
       setIsLoading(true);
       fetch(
-        'https://wdqjuf6en5.execute-api.eu-north-1.amazonaws.com/Prod/filter',
+        'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/find',
         {
           method: 'POST',
           headers: {
@@ -130,7 +130,7 @@ const ForestFinder = () => {
       )
         .then((response) => response.json())
         .then((data) => {
-          const geoJsonData = data.filtered_features;
+          const geoJsonData = data.forest_geojson;
           setGeoJson(geoJsonData);
           setIsSubmitted(true);
           setIsLoading(false);
@@ -160,7 +160,17 @@ const ForestFinder = () => {
         forests: [JSON.stringify(geoJson)],
       });
       setIsLoading(false);
-      navigate('/admin/map');
+      fetch(
+        'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/cut',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(geoJson),
+        }
+      );
+      navigate('/process');
     } catch (error) {
       setIsLoading(false);
       console.error('Error:', error);

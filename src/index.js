@@ -41,7 +41,8 @@ root.render(
             <Route path="/signup" element={<SignUp />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/forest" element={<ForestFinder />} />
+            <Route path="/find" element={<ForestFinder />} />
+            <Route path="/process" element={<ForestProcessor />} />
             <Route path="/test" element={<ForestProcessor />} />
             <Route path="*" element={<SignIn />} />
           </Routes>
