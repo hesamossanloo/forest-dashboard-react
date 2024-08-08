@@ -1,4 +1,4 @@
-// src/contexts/AuthContext.js
+import { Buffer } from 'buffer';
 import {
   browserLocalPersistence,
   browserSessionPersistence,
@@ -14,7 +14,9 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { fetchAirtablePrices } from 'services/airtable';
+import { downloadS3File } from 'services/AWS';
 import { auth, db } from 'services/firebase';
+import { S3_CUT_FOLDER_NAME, S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
 import { initialPrices } from 'variables/forest';
 
 const AuthContext = createContext();
@@ -116,6 +118,8 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password, rememberMe) => {
     setAuthLoading(true); // Set loading to true at the start of the function
+    let FBUser = null;
+    let PNGURL = null;
     try {
       // Set persistence based on the "Remember Me" checkbox
       const persistence = rememberMe
@@ -131,6 +135,12 @@ export const AuthProvider = ({ children }) => {
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
+        // Download Forest PNG image
+        const forestID = user.uid;
+        const data = await downloadS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+        );
         const userData = userDoc.data();
         let updatedPrices = userData.prices || {};
 
@@ -141,12 +151,23 @@ export const AuthProvider = ({ children }) => {
           }
         }
 
+        if (data && data.Body) {
+          // Convert the downloaded data to a base64 URL
+          const base64Data = Buffer.from(data.Body).toString('base64');
+          PNGURL = `data:image/png;base64,${base64Data}`;
+        }
+
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
+        FBUser = {
+          ...userData,
+          prices: updatedPrices,
+          forest: { ...userData.forest, PNG: PNGURL },
+        };
         setCurrentUser({
           ...user,
-          FBUser: { ...userData, prices: updatedPrices },
+          FBUser: { ...FBUser },
         });
       } else {
         // If the user document doesn't exist, create it with Airtable prices

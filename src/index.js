@@ -3,7 +3,9 @@ import 'assets/css/nucleo-icons.css';
 import 'assets/demo/demo.css';
 import 'assets/scss/black-dashboard-react.scss';
 import ForestCut from 'components/ForestCut/ForestCut';
+import ForestFeatureInfo from 'components/ForestFeatureInfo/ForestFeatureInfo';
 import ForestFinder from 'components/ForestFinder/ForestFinder';
+import ForestSR16Intersection from 'components/ForestSR16Intersection/ForestSR16Intersection';
 import ForestVectorize from 'components/ForestVectorize/ForestVectorize';
 import ForgotPassword from 'components/ForgotPassword/ForgotPassword';
 import PrivacyPolicy from 'components/PrivacyPolicy/PrivacyPolicy';
@@ -45,6 +47,11 @@ root.render(
             <Route path="/find" element={<ForestFinder />} />
             <Route path="/cut" element={<ForestCut />} />
             <Route path="/vectorize" element={<ForestVectorize />} />
+            <Route path="/featureInfo" element={<ForestFeatureInfo />} />
+            <Route
+              path="/SR16Intersection"
+              element={<ForestSR16Intersection />}
+            />
             <Route path="*" element={<SignIn />} />
           </Routes>
         </BrowserRouter>

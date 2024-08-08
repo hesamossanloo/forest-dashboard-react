@@ -30,8 +30,8 @@ export default function SignIn() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentUser && !authError && !authLoading) {
-      if (currentUser.FBUser && currentUser.FBUser.forests) {
+    if (currentUser && !authError && !authLoading && currentUser.FBUser) {
+      if (currentUser.FBUser.forest && currentUser.FBUser.forest.teig) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
         navigate('/find'); // Navigate to the dashboard
@@ -55,7 +55,11 @@ export default function SignIn() {
       rememberMeRef.current.checked
     );
     if (response && response.wasSuccessful && currentUser) {
-      if (currentUser.FBUser && currentUser.FBUser.forests) {
+      if (
+        currentUser.FBUser &&
+        currentUser.FBUser.forest &&
+        currentUser.FBUser.forest.teig
+      ) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
         navigate('/find'); // Navigate to the dashboard
@@ -66,7 +70,12 @@ export default function SignIn() {
   const handleGoogleSignIn = async () => {
     const response = await signInWithGoogle(rememberMeRef.current.checked);
     if (response && response.wasSuccessful) {
-      if (currentUser && currentUser.FBUser && currentUser.FBUser.forests) {
+      if (
+        currentUser &&
+        currentUser.FBUser &&
+        currentUser.FBUser.forest &&
+        currentUser.FBUser.forest.teig
+      ) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
         navigate('/find'); // Navigate to the dashboard

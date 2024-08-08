@@ -17,6 +17,7 @@ import L from 'leaflet';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
   GeoJSON,
+  ImageOverlay,
   LayerGroup,
   LayersControl,
   MapContainer,
@@ -70,13 +71,13 @@ function Map() {
   const [deselectPolygons, setDeselectPolygons] = useState(false);
   const multiPolygonSwitchIsONRef = useRef(multiPolygonSwitchIsON);
   const previousGeoJSONLayersRef = useRef([]);
-  const madsPolygonsRef = useRef(null);
+  const userPolygonsRef = useRef(null);
   const { currentUser } = useAuth();
   const [forestBounds, setForestBounds] = useState(null);
   const [userForestTeig, setUserForestTeig] = useState(null);
   // Handles the Map Filter states and the border colors
   useEffect(() => {
-    const geoJsonLayer = madsPolygonsRef.current;
+    const geoJsonLayer = userPolygonsRef.current;
     if (geoJsonLayer) {
       geoJsonLayer.eachLayer((layer) => {
         const feature = layer.feature;
@@ -101,8 +102,8 @@ function Map() {
   // if currentUser is logged in, chekc if it has forests. get the forests[0]
   // which is a geojson and find the bounds of it
   useEffect(() => {
-    if (currentUser && currentUser.FBUser && currentUser.FBUser.forests) {
-      const forest = currentUser.FBUser.forests[0];
+    if (currentUser && currentUser.FBUser && currentUser.FBUser.forest) {
+      const forest = currentUser.FBUser.forest.teig;
       if (forest) {
         const bounds = L.geoJSON(JSON.parse(forest)).getBounds();
         setForestBounds(bounds);
@@ -217,7 +218,7 @@ function Map() {
 
   // Handles the Map Filter states and the border colors
   useEffect(() => {
-    const geoJsonLayer = madsPolygonsRef.current;
+    const geoJsonLayer = userPolygonsRef.current;
 
     if (geoJsonLayer) {
       // Remove existing click event listeners
@@ -405,6 +406,11 @@ function Map() {
                 name="Skogbruksplan"
               >
                 <LayerGroup>
+                  <ImageOverlay
+                    url={currentUser.FBUser.forest.PNG}
+                    bounds={forestBounds}
+                    opacity={0.5}
+                  />
                   {/* {selectedForest.name === 'forest1' && (
                     <ImageOverlay
                       url={madsPolygonsPNG}
@@ -496,6 +502,11 @@ function Map() {
               {/* Stands */}
               <Overlay name="Stands" checked={activeOverlay['Stands']}>
                 <LayerGroup>
+                  <GeoJSON
+                    ref={userPolygonsRef}
+                    onEachFeature={onEachFeature}
+                    data={JSON.parse(currentUser.FBUser.forest.vector)}
+                  />
                   {/* {madsPolygons && selectedForest.name === 'forest1' && (
                     <GeoJSON
                       ref={madsPolygonsRef}

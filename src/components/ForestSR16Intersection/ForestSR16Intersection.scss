@@ -1,0 +1,40 @@
+.title {
+  font-size: 50px;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.mapContainer {
+  height: 400px; /* Adjust based on your preference */
+}
+
+.leaflet-container {
+  position: inherit;
+  height: 100%;
+  width: 100%;
+}
+
+.modal-footer {
+  padding: 24px 24px 16px 24px;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+    display: flex;
+    justify-content: center; /* Center the modal horizontally */
+  }
+}
+
+.modal-content .modal-header button {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  outline: 0;
+  padding: 1rem;
+  margin: -1rem -1rem -1rem auto;
+}
+.modal-content {
+  width: max-content;
+}

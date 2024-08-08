@@ -1,7 +1,7 @@
 import { useAuth } from 'contexts/AuthContext';
-import { useEffect, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import Lottie from 'react-lottie';
 import { Link, useNavigate } from 'react-router-dom';
@@ -157,7 +157,7 @@ const ForestFinder = () => {
     try {
       await updateFBUser({
         ...currentUser.FBUser,
-        forests: [JSON.stringify(geoJson)],
+        forest: { teig: JSON.stringify(geoJson) },
       });
       setIsLoading(false);
       fetch(

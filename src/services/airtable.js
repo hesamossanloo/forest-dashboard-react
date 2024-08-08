@@ -1,4 +1,4 @@
-const airtableBestandTableURL = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/${process.env.REACT_APP_AIRTABLE_BESTAND_TABLE_ID}`;
+const airtableBestandTableBaseURL = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}`;
 const airtablePricesTableURL = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/${process.env.REACT_APP_AIRTABLE_PRICES_N_COST_TABLE_ID}`;
 const airtableTooltipsTableURL = `https://api.airtable.com/v0/${process.env.REACT_APP_AIRTABLE_BASE_ID}/${process.env.REACT_APP_AIRTABLE_TOOLTIPS_TABLE_ID}`;
 
@@ -54,7 +54,10 @@ const fetchAirtableRecords = async (url) => {
 };
 
 // Now, use the generic function for specific cases
-const fetchBestandRecords = () => fetchAirtableRecords(airtableBestandTableURL);
+const fetchBestandRecords = (forestID) =>
+  fetchAirtableRecords(
+    `${airtableBestandTableBaseURL}/${forestID}_bestandsdata`
+  );
 const fetchPricesRecords = () => fetchAirtableRecords(airtablePricesTableURL);
 const fetchTooltipsRecords = () =>
   fetchAirtableRecords(airtableTooltipsTableURL);

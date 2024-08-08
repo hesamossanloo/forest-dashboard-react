@@ -36,8 +36,10 @@ const ForestVectorize = () => {
           `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`
         );
         setSHPFileExists(SHPFileExists);
+      } else {
+        clearInterval(interval);
       }
-    }, 1000); // Check every 5 seconds
+    }, 300000); // Check every 5 minutes
 
     return () => clearInterval(interval);
   }, [fileExists, currentUser]);
@@ -96,7 +98,7 @@ const ForestVectorize = () => {
   const handleForestConfirm = async () => {
     await updateFBUser({
       ...currentUser.FBUser,
-      forestHKVector: JSON.stringify(geoJson),
+      forest: { vector: JSON.stringify(geoJson) },
     });
     navigate('/featureInfo');
   };
@@ -119,7 +121,8 @@ const ForestVectorize = () => {
           <div className="title">
             <h1>
               Step 2/4 Polygons Creation: Please wait while we are preparing the
-              Skogbruksplan for your forest...
+              Skogbruksplan for your forest. Based on the size of your forest,
+              this could take up to 10 minutes.
             </h1>
           </div>
           <ForestScene />

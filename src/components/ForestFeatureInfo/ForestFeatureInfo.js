@@ -2,10 +2,9 @@
 import { useAuth } from 'contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { checkFileExists, downloadS3File } from 'services/AWS';
-import { S3_CUT_FOLDER_NAME, S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
-import './ForestCut.scss';
+import { S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
+import './ForestFeatureInfo.scss';
 
-import { Buffer } from 'buffer';
 import ForestScene from 'components/ForestScene/ForestScene';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,57 +12,69 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { Button, Modal, ModalFooter } from 'reactstrap';
 
 import { useNavigate } from 'react-router-dom';
-const ForestCut = () => {
+
+import shp from 'shpjs';
+import { S3_FEATURE_INFO_FOLDER_NAME } from 'variables/AWS';
+
+const ForestFeatureInfo = () => {
   const navigate = useNavigate();
 
-  const [PNGFileExists, setPNGFileExists] = useState(false);
-  const [forestHKPNG, setForestHKPNG] = useState(null);
+  const [fileExists, setSHPFileExists] = useState(false);
   const [geoJson, setGeoJson] = useState(null);
-  const [bounds, setBounds] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   // get the current user uid
-  const { currentUser, updateFBUser } = useAuth();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
+    // Check if the file exists every 5 seconds
     const interval = setInterval(async () => {
-      if (currentUser && !PNGFileExists) {
+      if (currentUser && !fileExists) {
         const forestID = currentUser.uid;
-        const exists = await checkFileExists(
+        const SHPFileExists = await checkFileExists(
           S3_OUTPUTS_BUCKET_NAME,
-          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
         );
-        setPNGFileExists(exists);
+        setSHPFileExists(SHPFileExists);
       } else {
         clearInterval(interval);
       }
-    }, 5000); // Check every 5 seconds
+    }, 60000); // Check every 1 minute
 
     return () => clearInterval(interval);
-  }, [PNGFileExists, currentUser]);
+  }, [fileExists, currentUser]);
 
   // if file is ready download it from s3 and save it under the folder assets/data
   useEffect(() => {
     const downloadFile = async () => {
       const forestID = currentUser.uid;
-      const data = await downloadS3File(
+      const shpFile = await downloadS3File(
         S3_OUTPUTS_BUCKET_NAME,
-        `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
       );
-      if (data) {
-        const parsedJSON = JSON.parse(currentUser.FBUser.forest.teig);
-        setGeoJson(parsedJSON);
+      const shxFile = await downloadS3File(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
+      );
+      const dbfFile = await downloadS3File(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
+      );
 
-        // Convert the downloaded data to a base64 URL
-        const base64Data = Buffer.from(data.Body).toString('base64');
-        const imageUrl = `data:image/png;base64,${base64Data}`;
-        setForestHKPNG(imageUrl);
+      if (shpFile && shxFile && dbfFile) {
+        // Convert SHP files to GeoJSON
+        const geoJsonData = await shp({
+          shp: shpFile.Body,
+          shx: shxFile.Body,
+          dbf: dbfFile.Body,
+        });
+        setGeoJson(geoJsonData);
       }
     };
-    if (PNGFileExists) {
+    if (fileExists) {
       downloadFile();
     }
-  }, [PNGFileExists, currentUser]);
+  }, [fileExists, currentUser]);
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -77,30 +88,16 @@ const ForestCut = () => {
       if (geoJson) {
         const geoJsonLayer = L.geoJSON(geoJson).addTo(map);
         map.flyToBounds(geoJsonLayer.getBounds());
-        setBounds(geoJsonLayer.getBounds());
-
-        if (forestHKPNG) {
-          L.imageOverlay(forestHKPNG, geoJsonLayer.getBounds(), {
-            opacity: 0.5,
-          }).addTo(map);
-          setModalOpen(true);
-        }
+        setModalOpen(true);
       }
-    }, [geoJson, map, forestHKPNG]);
+    }, [geoJson, map]);
 
     return null;
   };
+
   const handleForestConfirm = async () => {
-    // Assuming bounds is a custom object, convert it to a plain JavaScript object
-    const plainBounds = JSON.parse(JSON.stringify(bounds));
-
-    await updateFBUser({
-      ...currentUser.FBUser,
-      forest: { bounds: plainBounds },
-    });
-
     fetch(
-      'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/vectorize',
+      'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/SR16IntersectionToAirtable',
       {
         method: 'POST',
         headers: {
@@ -109,15 +106,14 @@ const ForestCut = () => {
         body: currentUser.FBUser.forest.teig,
       }
     );
-
-    navigate('/vectorize');
+    navigate('/SR16Intersection');
   };
   return (
     <>
-      {PNGFileExists && currentUser && forestHKPNG ? (
+      {fileExists && currentUser ? (
         <>
           <div className="title">
-            <h1>STEP 1/4 for your Skogbruksplan is done!</h1>
+            <h1>STEP 3/4 for your Skogbruksplan is done!</h1>
           </div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
@@ -130,8 +126,9 @@ const ForestCut = () => {
         <>
           <div className="title">
             <h1>
-              Step 1/4 Color Creation: Please wait while we are preparing the
-              Skogbruksplan for your forest...
+              Step 3/4 Bestands Info Gathering: Please wait while we are
+              preparing the Skogbruksplan for your forest. Based on the size of
+              your forest, this could take up to 5 minutes.
             </h1>
           </div>
           <ForestScene />
@@ -141,7 +138,7 @@ const ForestCut = () => {
         <Modal isOpen={modalOpen} toggle={toggleModal}>
           <div className="modal-header">
             <h2 className="modal-title" id="exampleModalLabel">
-              Do you see the Skogbruksplan cut for your forest?
+              Do you see the Polygons for your forest?
             </h2>
             <button
               type="button"
@@ -167,4 +164,4 @@ const ForestCut = () => {
   );
 };
 
-export default ForestCut;
+export default ForestFeatureInfo;
