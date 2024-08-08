@@ -2,8 +2,9 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'assets/css/nucleo-icons.css';
 import 'assets/demo/demo.css';
 import 'assets/scss/black-dashboard-react.scss';
+import ForestCut from 'components/ForestCut/ForestCut';
 import ForestFinder from 'components/ForestFinder/ForestFinder';
-import ForestProcessor from 'components/ForestProcessor/ForestProcessor';
+import ForestVectorize from 'components/ForestVectorize/ForestVectorize';
 import ForgotPassword from 'components/ForgotPassword/ForgotPassword';
 import PrivacyPolicy from 'components/PrivacyPolicy/PrivacyPolicy';
 import PrivateRoute from 'components/PrivateRoute/PrivateRoute';
@@ -42,8 +43,8 @@ root.render(
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/find" element={<ForestFinder />} />
-            <Route path="/process" element={<ForestProcessor />} />
-            <Route path="/test" element={<ForestProcessor />} />
+            <Route path="/cut" element={<ForestCut />} />
+            <Route path="/vectorize" element={<ForestVectorize />} />
             <Route path="*" element={<SignIn />} />
           </Routes>
         </BrowserRouter>

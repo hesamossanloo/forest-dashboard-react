@@ -3,18 +3,23 @@ import { useAuth } from 'contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { checkFileExists, downloadS3File } from 'services/AWS';
 import { S3_CUT_FOLDER_NAME, S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
-import './ForestProcessor.scss';
+import './ForestCut.scss';
 
 import { Buffer } from 'buffer';
 import ForestScene from 'components/ForestScene/ForestScene';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { Button, Modal, ModalFooter } from 'reactstrap';
 
-const ForestProcessor = () => {
-  const [fileExists, setFileExists] = useState(false);
+import { useNavigate } from 'react-router-dom';
+const ForestCut = () => {
+  const navigate = useNavigate();
+
+  const [PNGFileExists, setPNGFileExists] = useState(false);
   const [forestHKPNG, setForestHKPNG] = useState(null);
   const [geoJson, setGeoJson] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // get the current user uid
   const { currentUser } = useAuth();
@@ -22,18 +27,18 @@ const ForestProcessor = () => {
   useEffect(() => {
     // Check if the file exists every 5 seconds
     const interval = setInterval(async () => {
-      if (currentUser && !fileExists) {
+      if (currentUser && !PNGFileExists) {
         const forestID = currentUser.uid;
         const exists = await checkFileExists(
           S3_OUTPUTS_BUCKET_NAME,
           `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.svg`
         );
-        setFileExists(exists);
+        setPNGFileExists(exists);
       }
     }, 1000); // Check every 5 seconds
 
     return () => clearInterval(interval);
-  }, [fileExists, currentUser]);
+  }, [PNGFileExists, currentUser]);
 
   // if file is ready download it from s3 and save it under the folder assets/data
   useEffect(() => {
@@ -53,10 +58,14 @@ const ForestProcessor = () => {
         setForestHKPNG(imageUrl);
       }
     };
-    if (fileExists) {
+    if (PNGFileExists) {
       downloadFile();
     }
-  }, [fileExists, currentUser]);
+  }, [PNGFileExists, currentUser]);
+
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+  };
 
   // eslint-disable-next-line react/prop-types
   const MapComponent = ({ geoJson }) => {
@@ -71,18 +80,32 @@ const ForestProcessor = () => {
           L.imageOverlay(forestHKPNG, geoJsonLayer.getBounds(), {
             opacity: 0.5,
           }).addTo(map);
+          setModalOpen(true);
         }
       }
     }, [geoJson, map, forestHKPNG]);
 
     return null;
   };
+  const handleForestConfirm = async () => {
+    fetch(
+      'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/vectorize',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: currentUser.FBUser.forests[0],
+      }
+    );
+    navigate('/vectorize');
+  };
   return (
     <>
-      {fileExists && currentUser && forestHKPNG ? (
+      {PNGFileExists && currentUser && forestHKPNG ? (
         <>
           <div className="title">
-            <h1>Your Skogbruksplan Cut is ready!</h1>
+            <h1>STEP 1/4 for your Skogbruksplan is done!</h1>
           </div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
@@ -94,13 +117,42 @@ const ForestProcessor = () => {
       ) : (
         <>
           <div className="title">
-            <h1>Please wait while we process your forest...</h1>
+            <h1>
+              Step 1/4 Color Creation: Please wait while we are preparing the
+              Skogbruksplan for your forest...
+            </h1>
           </div>
           <ForestScene />
         </>
+      )}
+      {modalOpen && (
+        <Modal isOpen={modalOpen} toggle={toggleModal}>
+          <div className="modal-header">
+            <h2 className="modal-title" id="exampleModalLabel">
+              Do you see the Skogbruksplan cut for your forest?
+            </h2>
+            <button
+              type="button"
+              className="close"
+              data-dismiss="modal"
+              aria-hidden="true"
+              onClick={toggleModal}
+            >
+              <i className="tim-icons icon-simple-remove" />
+            </button>
+          </div>
+          <ModalFooter>
+            <Button color="danger" onClick={toggleModal}>
+              No, Try Again
+            </Button>
+            <Button color="success" onClick={handleForestConfirm}>
+              Yes, Continue
+            </Button>
+          </ModalFooter>
+        </Modal>
       )}
     </>
   );
 };
 
-export default ForestProcessor;
+export default ForestCut;

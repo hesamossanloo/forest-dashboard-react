@@ -170,7 +170,7 @@ const ForestFinder = () => {
           body: JSON.stringify(geoJson),
         }
       );
-      navigate('/process');
+      navigate('/cut');
     } catch (error) {
       setIsLoading(false);
       console.error('Error:', error);
