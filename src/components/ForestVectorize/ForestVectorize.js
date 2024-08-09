@@ -19,30 +19,35 @@ import shp from 'shpjs';
 const ForestVectorize = () => {
   const navigate = useNavigate();
 
-  const [fileExists, setSHPFileExists] = useState(false);
   const [geoJson, setGeoJson] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [VectorFileExists, setVectorFileExists] = useState(false);
   // get the current user uid
-  const { currentUser, updateFBUser } = useAuth();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    // Check if the file exists every 5 seconds
-    const interval = setInterval(async () => {
-      if (currentUser && !fileExists) {
-        const forestID = currentUser.uid;
-        const SHPFileExists = await checkFileExists(
-          S3_OUTPUTS_BUCKET_NAME,
-          `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`
-        );
-        setSHPFileExists(SHPFileExists);
+    const checkFile = async () => {
+      const forestID = currentUser.uid;
+      const VectorExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`
+      );
+      setVectorFileExists(VectorExists);
+    };
+
+    const interval = setInterval(() => {
+      if (currentUser && !VectorFileExists) {
+        checkFile();
       } else {
         clearInterval(interval);
       }
-    }, 300000); // Check every 5 minutes
+    }, 120000); // Check every 5 seconds
+
+    // Check once if the file exists
+    checkFile();
 
     return () => clearInterval(interval);
-  }, [fileExists, currentUser]);
+  }, [VectorFileExists, currentUser]);
 
   // if file is ready download it from s3 and save it under the folder assets/data
   useEffect(() => {
@@ -71,10 +76,10 @@ const ForestVectorize = () => {
         setGeoJson(geoJsonData);
       }
     };
-    if (fileExists) {
+    if (VectorFileExists) {
       downloadFile();
     }
-  }, [fileExists, currentUser]);
+  }, [VectorFileExists, currentUser]);
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -96,15 +101,11 @@ const ForestVectorize = () => {
   };
 
   const handleForestConfirm = async () => {
-    await updateFBUser({
-      ...currentUser.FBUser,
-      forest: { vector: JSON.stringify(geoJson) },
-    });
     navigate('/featureInfo');
   };
   return (
     <>
-      {fileExists && currentUser ? (
+      {VectorFileExists && currentUser ? (
         <>
           <div className="title">
             <h1>STEP 2/4 for your Skogbruksplan is done!</h1>

@@ -13,36 +13,46 @@ import { Button, Modal, ModalFooter } from 'reactstrap';
 
 import { useNavigate } from 'react-router-dom';
 
+import { doc, getDoc } from 'firebase/firestore';
+import { useRef } from 'react';
+import { db } from 'services/firebase';
 import shp from 'shpjs';
 import { S3_FEATURE_INFO_FOLDER_NAME } from 'variables/AWS';
 
 const ForestFeatureInfo = () => {
   const navigate = useNavigate();
-
-  const [fileExists, setSHPFileExists] = useState(false);
-  const [geoJson, setGeoJson] = useState(null);
+  const [requestSent, setRequestSent] = useState(false);
+  const [SHPFileExists, setSHPFileExists] = useState(false);
+  const [AllPolygonsGeoJson, setAllPolygonsGeoJson] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const hasDownloaded = useRef(false); // Use a ref to track if the file has been downloaded
 
   // get the current user uid
-  const { currentUser } = useAuth();
+  const { currentUser, updateFBUser } = useAuth();
 
   useEffect(() => {
-    // Check if the file exists every 5 seconds
-    const interval = setInterval(async () => {
-      if (currentUser && !fileExists) {
-        const forestID = currentUser.uid;
-        const SHPFileExists = await checkFileExists(
-          S3_OUTPUTS_BUCKET_NAME,
-          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
-        );
-        setSHPFileExists(SHPFileExists);
+    const checkFile = async () => {
+      const forestID = currentUser.uid;
+      const VectorWInfoExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+      );
+      setSHPFileExists(VectorWInfoExists);
+    };
+
+    const interval = setInterval(() => {
+      if (currentUser && !SHPFileExists) {
+        checkFile();
       } else {
         clearInterval(interval);
       }
-    }, 60000); // Check every 1 minute
+    }, 120000); // Check every 5 seconds
+
+    // Check once if the file exists
+    checkFile();
 
     return () => clearInterval(interval);
-  }, [fileExists, currentUser]);
+  }, [SHPFileExists, currentUser]);
 
   // if file is ready download it from s3 and save it under the folder assets/data
   useEffect(() => {
@@ -63,18 +73,26 @@ const ForestFeatureInfo = () => {
 
       if (shpFile && shxFile && dbfFile) {
         // Convert SHP files to GeoJSON
-        const geoJsonData = await shp({
+        const geoJsonWithInfos = await shp({
           shp: shpFile.Body,
           shx: shxFile.Body,
           dbf: dbfFile.Body,
         });
-        setGeoJson(geoJsonData);
+        setAllPolygonsGeoJson(geoJsonWithInfos);
+        await updateFBUser({
+          ...currentUser.FBUser,
+          forest: {
+            ...currentUser.FBUser.forest,
+            vector: JSON.stringify(geoJsonWithInfos),
+          },
+        });
       }
     };
-    if (fileExists) {
+    if (SHPFileExists && !hasDownloaded.current) {
+      hasDownloaded.current = true;
       downloadFile();
     }
-  }, [fileExists, currentUser]);
+  }, [SHPFileExists, currentUser]);
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -96,21 +114,53 @@ const ForestFeatureInfo = () => {
   };
 
   const handleForestConfirm = async () => {
-    fetch(
-      'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/SR16IntersectionToAirtable',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: currentUser.FBUser.forest.teig,
+    if (requestSent) {
+      console.log('Request already sent. So not sending again!');
+      navigate('/SR16Intersection');
+    } else {
+      try {
+        let requestPayload = null;
+        setRequestSent(true); // Mark the request as sent
+        if (currentUser.FBUser.forest && currentUser.FBUser.forest.teig) {
+          requestPayload = currentUser.FBUser.forest.teig;
+        } else {
+          // Get the teig from the Firestore
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            requestPayload = userData.FBUser.forest.teig;
+          }
+        }
+
+        // Set a timeout for the fetch request
+        const fetchWithTimeout = (url, options, timeout = 29000) => {
+          return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Request timed out')), timeout)
+            ),
+          ]);
+        };
+        await fetchWithTimeout(
+          'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/SR16IntersectionToAirtable',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestPayload,
+          }
+        );
+        navigate('/SR16Intersection');
+      } catch (error) {
+        console.error('Error:', error);
       }
-    );
-    navigate('/SR16Intersection');
+    }
   };
   return (
     <>
-      {fileExists && currentUser ? (
+      {SHPFileExists && currentUser ? (
         <>
           <div className="title">
             <h1>STEP 3/4 for your Skogbruksplan is done!</h1>
@@ -118,7 +168,7 @@ const ForestFeatureInfo = () => {
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <MapComponent geoJson={geoJson} />
+              <MapComponent geoJson={AllPolygonsGeoJson} />
             </MapContainer>
           </div>
         </>

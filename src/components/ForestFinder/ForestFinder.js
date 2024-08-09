@@ -42,6 +42,7 @@ const MapComponent = ({ geoJson }) => {
 
 const ForestFinder = () => {
   const navigate = useNavigate();
+  const [requestSent, setRequestSent] = useState(false);
   const { currentUser, updateFBUser, logout, authErro } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoaidng, setIsLoading] = useState(false);
@@ -148,6 +149,11 @@ const ForestFinder = () => {
   };
 
   const handleForestConfirm = async () => {
+    if (requestSent) {
+      console.log('Request already sent. So not sending again!');
+      return; // Prevent multiple requests
+    }
+
     setIsLoading(true);
     if (!currentUser || !currentUser.FBUser) {
       setIsLoading(false);
@@ -157,9 +163,10 @@ const ForestFinder = () => {
     try {
       await updateFBUser({
         ...currentUser.FBUser,
-        forest: { teig: JSON.stringify(geoJson) },
+        forest: { ...currentUser.FBUser.forest, teig: JSON.stringify(geoJson) },
       });
       setIsLoading(false);
+      setRequestSent(true); // Mark the request as sent
       fetch(
         'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/cut',
         {

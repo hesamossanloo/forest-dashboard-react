@@ -16,11 +16,67 @@ export const isPointInsideTeig = (point, polygon) => {
   const turfMultiPolygon = turf.multiPolygon(polygon);
   return turf.booleanPointInPolygon(turfPoint, turfMultiPolygon);
 };
-export const isPointInsidePolygon = (point, polygon) => {
-  const turfPoint = turf.point([point.lng, point.lat]);
-  const turfPolygon = turf.polygon(polygon);
-  return turf.booleanPointInPolygon(turfPoint, turfPolygon);
+
+export const validateAndCloseLayersPolygonCoordinates = (geoJSON) => {
+  geoJSON.features.forEach((feature) => {
+    if (
+      feature.geometry.type === 'Polygon' ||
+      feature.geometry.type === 'MultiPolygon'
+    ) {
+      const coordinates = feature.geometry.coordinates[0];
+      if (coordinates[0] !== coordinates[coordinates.length - 1]) {
+        console.warn(
+          'Polygon is not closed. Closing it automatically. teig_best_:',
+          feature.properties.teig_best_
+        );
+        coordinates.push(coordinates[0]); // Close the polygon by adding the first coordinate to the end
+      }
+    }
+  });
+
+  return geoJSON;
 };
+
+export const validateAndCloseOnlyPolygonsCoordinates = (polygons) => {
+  // Iterate over each polygon in the coordinates array
+  polygons.geometry.coordinates.forEach((coord) => {
+    // Iterate over each ring in the polygon
+    coord.forEach((ring) => {
+      // Check if the first and last coordinates of the ring are the same
+      const firstCoord = ring[0];
+      const lastCoord = ring[ring.length - 1];
+
+      if (firstCoord[0] !== lastCoord[0] || firstCoord[1] !== lastCoord[1]) {
+        console.warn('Polygon ring is not closed. Closing it automatically.');
+        ring.push(firstCoord); // Close the ring by adding the first coordinate to the end
+      }
+    });
+  });
+
+  return polygons;
+};
+
+export const isPointInsidePolygon = (point, polygonCoords) => {
+  try {
+    const turfPoint = turf.point([point.lng, point.lat]);
+    const turfPolygon = turf.polygon(polygonCoords);
+    return turf.booleanPointInPolygon(turfPoint, turfPolygon);
+  } catch (error) {
+    console.error('Error:', error);
+    return false;
+  }
+};
+export const isPointInsideMultiPolygon = (point, polygonCoords) => {
+  try {
+    const turfPoint = turf.point([point.lng, point.lat]);
+    const turfPolygon = turf.multiPolygon(polygonCoords);
+    return turf.booleanPointInPolygon(turfPoint, turfPolygon);
+  } catch (error) {
+    console.error('Error:', error);
+    return false;
+  }
+};
+
 const getHKBGColor = (hk) => {
   let BGColor;
   switch (hk) {
@@ -112,7 +168,7 @@ export const calculateFeatInfoHKTotals = (
       const props = feature.properties;
       const foundRow =
         airTableFeatInfos.find(
-          (row) => row.fields.bestand_id === props.teig_best_nr
+          (row) => row.fields.bestand_id === props.teig_best_
         ) || {};
 
       const airTableFeatRowFields = foundRow.fields;
@@ -398,7 +454,7 @@ export const generateHKPopupContent = (
     selectedFeatures.forEach((feature) => {
       const corresponsingAirtTableFeature = airTableBestandFeatInfos.find(
         (featureData) =>
-          featureData.fields.bestand_id === feature.properties.teig_best_nr
+          featureData.fields.bestand_id === feature.properties.teig_best_
       ).fields;
       const rowBGColor = getHKBGColor(
         corresponsingAirtTableFeature.hogstkl_verdi
@@ -461,8 +517,7 @@ export const generateHKPopupContent = (
     const selectedFeature = selectedFeatures[0];
     const corresponsingAirtTableFeature = airTableBestandFeatInfos.find(
       (featureData) =>
-        featureData.fields.bestand_id ===
-        selectedFeature.properties.teig_best_nr
+        featureData.fields.bestand_id === selectedFeature.properties.teig_best_
     ).fields;
 
     corresponsingAirtTableFeature.avg_price_m3 = calculateAvgPrice(

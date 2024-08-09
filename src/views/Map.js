@@ -33,6 +33,7 @@ import CustomMapEvents from 'utilities/Map/CustomMapEvents';
 //   knutPolygonsPNGBounds,
 //   madsPolygonsPNGBounds,
 // } from 'variables/forest';
+import { validateAndCloseLayersPolygonCoordinates } from 'utilities/Map/utililtyFunctions.js';
 import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
@@ -122,7 +123,11 @@ function Map() {
   }, [multiPolygonSwitchIsON]);
 
   const handleGeoJSONLayerClick = (feature, geoJSONLayer) => {
-    if (feature && feature.properties && feature.properties.teig_best_nr) {
+    // if (!validateAndCloseLayersPolygonCoordinates(geoJSONLayer)) {
+    //   console.error('Invalid GeoJSON Layer:', geoJSONLayer);
+    //   return;
+    // }
+    if (feature && feature.properties && feature.properties.teig_best_) {
       selectedVectorFeatureRef.current = feature;
       setSelectedVectorFeature(feature);
     }
@@ -131,6 +136,10 @@ function Map() {
       // if the selected features was already in the list then unhighlight the previous layer
       if (previousGeoJSONLayersRef.current.includes(geoJSONLayer)) {
         previousGeoJSONLayersRef.current.forEach((lr) => {
+          // if (!validateAndCloseLayersPolygonCoordinates(lr)) {
+          //   console.error('Invalid GeoJSON Layer:', lr);
+          //   return;
+          // }
           // Handle if the HK5 & 4 filter is avtive for red and green colors
           if (lr.feature.properties.hogstkl_verdi === '5') {
             lr.setStyle({
@@ -153,21 +162,31 @@ function Map() {
       } else {
         // if the selected features was NOT already in the list then: first
         // unhighlight all the previous layer and highlight th enew layer
-        previousGeoJSONLayersRef.current.forEach((lr) => {
-          if (lr.feature.properties.hogstkl_verdi === '5') {
-            lr.setStyle({
-              color: mapFilter.HK5 ? '#de6867' : 'blue',
-              weight: mapFilter.HK5 ? 6 : 1,
-            });
-          } else if (lr.feature.properties.hogstkl_verdi === '4') {
-            lr.setStyle({
-              color: mapFilter.HK4 ? '#bc8963' : 'blue',
-              weight: mapFilter.HK4 ? 6 : 1,
-            });
-          }
-        });
+        if (previousGeoJSONLayersRef.current.length > 0) {
+          previousGeoJSONLayersRef.current.forEach((lr) => {
+            // if (!validateAndCloseLayersPolygonCoordinates(lr)) {
+            //   console.error('Invalid GeoJSON Layer:', lr);
+            //   return;
+            // }
+            if (lr.feature.properties.hogstkl_verdi === '5') {
+              lr.setStyle({
+                color: mapFilter.HK5 ? '#de6867' : 'blue',
+                weight: mapFilter.HK5 ? 6 : 1,
+              });
+            } else if (lr.feature.properties.hogstkl_verdi === '4') {
+              lr.setStyle({
+                color: mapFilter.HK4 ? '#bc8963' : 'blue',
+                weight: mapFilter.HK4 ? 6 : 1,
+              });
+            }
+          });
+        }
         previousGeoJSONLayersRef.current = []; // Reset the list of previous layers
         // Highlight the clicked layer
+        // if (!validateAndCloseLayersPolygonCoordinates(geoJSONLayer)) {
+        //   console.error('Invalid GeoJSON Layer:', geoJSONLayer);
+        //   return;
+        // }
         setTimeout(() => {
           geoJSONLayer.setStyle({
             color: 'yellow', // Color for the border
@@ -241,6 +260,13 @@ function Map() {
   // const toggleDD = () => setDropdownOpen((prevState) => !prevState);
 
   const onEachFeature = (feature, geoJSONLayer) => {
+    // if (!validateAndCloseLayersPolygonCoordinates(geoJSONLayer)) {
+    //   console.error(
+    //     'Invalid GeoJSON Layer with teig_best_:',
+    //     geoJSONLayer.feature.properties.teig_best_
+    //   );
+    //   return;
+    // }
     geoJSONLayer.setStyle({
       fillColor: 'transparent',
       fillOpacity: 0,
@@ -505,7 +531,9 @@ function Map() {
                   <GeoJSON
                     ref={userPolygonsRef}
                     onEachFeature={onEachFeature}
-                    data={JSON.parse(currentUser.FBUser.forest.vector)}
+                    data={validateAndCloseLayersPolygonCoordinates(
+                      JSON.parse(currentUser.FBUser.forest.vector)
+                    )}
                   />
                   {/* {madsPolygons && selectedForest.name === 'forest1' && (
                     <GeoJSON

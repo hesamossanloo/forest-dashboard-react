@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useAuth } from 'contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { checkFileExists, downloadS3File } from 'services/AWS';
@@ -12,32 +11,50 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { Button, Modal, ModalFooter } from 'reactstrap';
 
+import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { db } from 'services/firebase';
+import { S3_VECTORIZE_FOLDER_NAME } from 'variables/AWS';
+
 const ForestCut = () => {
   const navigate = useNavigate();
 
   const [PNGFileExists, setPNGFileExists] = useState(false);
+  const [VectorFileExists, setVectorFileExists] = useState(false);
   const [forestHKPNG, setForestHKPNG] = useState(null);
   const [geoJson, setGeoJson] = useState(null);
   const [bounds, setBounds] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
 
   // get the current user uid
   const { currentUser, updateFBUser } = useAuth();
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const checkFile = async () => {
+      const forestID = currentUser.uid;
+      const PNGExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+      );
+      setPNGFileExists(PNGExists);
+      const VectorExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`
+      );
+      setVectorFileExists(VectorExists);
+    };
+
+    const interval = setInterval(() => {
       if (currentUser && !PNGFileExists) {
-        const forestID = currentUser.uid;
-        const exists = await checkFileExists(
-          S3_OUTPUTS_BUCKET_NAME,
-          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
-        );
-        setPNGFileExists(exists);
+        checkFile();
       } else {
         clearInterval(interval);
       }
     }, 5000); // Check every 5 seconds
+
+    // Check once if the file exists
+    checkFile();
 
     return () => clearInterval(interval);
   }, [PNGFileExists, currentUser]);
@@ -51,8 +68,19 @@ const ForestCut = () => {
         `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
       );
       if (data) {
-        const parsedJSON = JSON.parse(currentUser.FBUser.forest.teig);
-        setGeoJson(parsedJSON);
+        if (currentUser.FBUser.forest && currentUser.FBUser.forest.teig) {
+          const parsedJSON = JSON.parse(currentUser.FBUser.forest.teig);
+          setGeoJson(parsedJSON);
+        } else {
+          // Get the teig from the Firestore
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const parsedJSON = JSON.parse(userData.FBUser.forest.teig);
+            setGeoJson(parsedJSON);
+          }
+        }
 
         // Convert the downloaded data to a base64 URL
         const base64Data = Buffer.from(data.Body).toString('base64');
@@ -74,44 +102,75 @@ const ForestCut = () => {
     const map = useMap();
 
     useEffect(() => {
-      if (geoJson) {
+      if (geoJson && map) {
         const geoJsonLayer = L.geoJSON(geoJson).addTo(map);
-        map.flyToBounds(geoJsonLayer.getBounds());
-        setBounds(geoJsonLayer.getBounds());
+        const newBounds = geoJsonLayer.getBounds();
+
+        // Only update bounds if they have changed
+        if (!bounds || !bounds.equals(newBounds)) {
+          map.flyToBounds(newBounds);
+          setBounds(newBounds);
+        }
 
         if (forestHKPNG) {
-          L.imageOverlay(forestHKPNG, geoJsonLayer.getBounds(), {
+          L.imageOverlay(forestHKPNG, newBounds, {
             opacity: 0.5,
           }).addTo(map);
           setModalOpen(true);
         }
       }
-    }, [geoJson, map, forestHKPNG]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [geoJson, map, forestHKPNG, bounds]);
 
     return null;
   };
+
   const handleForestConfirm = async () => {
+    if (requestSent) {
+      console.log('Request already sent. So not sending again!');
+      return; // Prevent multiple requests
+    }
+
     // Assuming bounds is a custom object, convert it to a plain JavaScript object
     const plainBounds = JSON.parse(JSON.stringify(bounds));
 
     await updateFBUser({
       ...currentUser.FBUser,
-      forest: { bounds: plainBounds },
+      forest: { ...currentUser.FBUser.forest, bounds: plainBounds },
     });
 
-    fetch(
-      'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/vectorize',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: currentUser.FBUser.forest.teig,
+    try {
+      setRequestSent(true); // Mark the request as sent
+      if (VectorFileExists) {
+        navigate('/vectorize');
+      } else {
+        // Set a timeout for the fetch request
+        const fetchWithTimeout = (url, options, timeout = 29000) => {
+          return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Request timed out')), timeout)
+            ),
+          ]);
+        };
+        await fetchWithTimeout(
+          'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/vectorize',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: currentUser.FBUser.forest.teig, // Ensure the body is a JSON string
+          }
+        );
+        navigate('/vectorize');
       }
-    );
-
-    navigate('/vectorize');
+    } catch (error) {
+      console.error('Error:', error);
+      setRequestSent(false); // Reset the state if there's an error
+    }
   };
+
   return (
     <>
       {PNGFileExists && currentUser && forestHKPNG ? (

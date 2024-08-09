@@ -37,14 +37,17 @@ export const AuthProvider = ({ children }) => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          const userData = userDoc.data();
-          if (userData.prices) {
-            setUserSpeciesPrices(userData.prices); // Set prices in the context
+          const FBUserData = userDoc.data();
+          if (FBUserData.prices) {
+            setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
           }
-          setCurrentUser({
-            ...user,
-            FBUser: { ...userData },
-          });
+          setCurrentUser((prevUser) => ({
+            ...prevUser,
+            FBUser: {
+              ...prevUser.FBUser,
+              ...FBUserData,
+            },
+          }));
         }
       } else {
         setAuthLoading(false);
@@ -60,13 +63,20 @@ export const AuthProvider = ({ children }) => {
 
   const updateFBUser = async (user) => {
     if (!currentUser) return; // Guard clause if there's no logged-in user
-
+    console.log('Updating FBUser:', user);
     try {
       const userDocRef = doc(db, 'users', currentUser.uid);
       const userDoc = await getDoc(userDocRef);
       if (userDoc.exists()) {
         // set doc for the new user
         await setDoc(userDocRef, user, { merge: true });
+        setCurrentUser((prevUser) => ({
+          ...prevUser,
+          FBUser: {
+            ...prevUser.FBUser,
+            forest: { ...prevUser.FBUser.forest, ...user.forest },
+          },
+        }));
       }
     } catch (error) {
       setAuthError(error.message);
@@ -118,7 +128,6 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password, rememberMe) => {
     setAuthLoading(true); // Set loading to true at the start of the function
-    let FBUser = null;
     let PNGURL = null;
     try {
       // Set persistence based on the "Remember Me" checkbox
@@ -134,15 +143,27 @@ export const AuthProvider = ({ children }) => {
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists()) {
+      if (!userDoc.exists()) {
+        // If the user document doesn't exist, create it with Airtable prices
+        await setDoc(userDocRef, { prices: airtablePrices }, { merge: true });
+        setUserSpeciesPrices(airtablePrices);
+        setCurrentUser((prevUser) => ({
+          ...prevUser,
+          FBUser: {
+            ...prevUser.FBUser,
+            email,
+            prices: airtablePrices,
+          },
+        }));
+      } else {
         // Download Forest PNG image
         const forestID = user.uid;
         const data = await downloadS3File(
           S3_OUTPUTS_BUCKET_NAME,
           `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
         );
-        const userData = userDoc.data();
-        let updatedPrices = userData.prices || {};
+        const FBUserData = userDoc.data();
+        let updatedPrices = FBUserData.prices || {};
 
         // Overwrite empty prices with Airtable prices
         for (const key in airtablePrices) {
@@ -160,23 +181,16 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
-        FBUser = {
-          ...userData,
-          prices: updatedPrices,
-          forest: { ...userData.forest, PNG: PNGURL },
-        };
-        setCurrentUser({
+        setCurrentUser((prevUser) => ({
+          ...prevUser,
           ...user,
-          FBUser: { ...FBUser },
-        });
-      } else {
-        // If the user document doesn't exist, create it with Airtable prices
-        await setDoc(userDocRef, { prices: airtablePrices }, { merge: true });
-        setUserSpeciesPrices(airtablePrices);
-        setCurrentUser({
-          ...user,
-          FBUser: { email, prices: airtablePrices },
-        });
+          FBUser: {
+            ...prevUser.FBUser,
+            ...FBUserData,
+            prices: updatedPrices,
+            forest: { ...prevUser.FBUser.forest, PNG: PNGURL },
+          },
+        }));
       }
       setAuthLoading(false);
       return { wasSuccessful: true };
@@ -190,21 +204,24 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithGoogle = async (rememberMe) => {
     setAuthLoading(true);
-    // Set persistence based on the "Remember Me" checkbox
-    const persistence = rememberMe
-      ? browserLocalPersistence
-      : browserSessionPersistence;
-    await setPersistence(auth, persistence);
-    const provider = new GoogleAuthProvider();
+    let PNGURL = null;
     try {
+      // Set persistence based on the "Remember Me" checkbox
+      const persistence = rememberMe
+        ? browserLocalPersistence
+        : browserSessionPersistence;
+      await setPersistence(auth, persistence);
+      const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
+
+      const airtablePrices = await fetchAirtablePrices();
+
       const user = userCredential.user;
       const userDocRef = await doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      const airtablePrices = await fetchAirtablePrices();
-
       if (!userDoc.exists()) {
+        // If the user document doesn't exist, create it with Airtable prices
         await setDoc(doc(db, 'users', user.uid), {
           firstName: user.displayName.split(' ')[0],
           lastName: user.displayName.split(' ')[1],
@@ -212,9 +229,26 @@ export const AuthProvider = ({ children }) => {
           prices: airtablePrices,
         });
         setUserSpeciesPrices(airtablePrices);
+        setCurrentUser((prevUser) => ({
+          ...prevUser,
+          FBUser: {
+            ...prevUser.FBUser,
+            firstName: user.displayName.split(' ')[0],
+            lastName: user.displayName.split(' ')[1],
+            email: user.email,
+            prices: airtablePrices,
+          },
+        }));
       } else {
-        const userData = userDoc.data();
-        let updatedPrices = userData.prices || {};
+        // Download Forest PNG image
+        const forestID = user.uid;
+        const data = await downloadS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+        );
+
+        const FBUserData = userDoc.data();
+        let updatedPrices = FBUserData.prices || {};
 
         // Overwrite empty prices with Airtable prices
         for (const key in airtablePrices) {
@@ -223,13 +257,25 @@ export const AuthProvider = ({ children }) => {
           }
         }
 
+        if (data && data.Body) {
+          // Convert the downloaded data to a base64 URL
+          const base64Data = Buffer.from(data.Body).toString('base64');
+          PNGURL = `data:image/png;base64,${base64Data}`;
+        }
+
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
-        setCurrentUser({
+        setCurrentUser((prevUser) => ({
+          ...prevUser,
           ...user,
-          FBUser: { ...userData, prices: updatedPrices },
-        });
+          FBUser: {
+            ...prevUser.FBUser,
+            ...FBUserData,
+            forest: { ...prevUser.FBUser.forest, PNG: PNGURL },
+            prices: updatedPrices,
+          },
+        }));
       }
       setAuthLoading(false);
       return { wasSuccessful: true };
@@ -255,6 +301,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    setCurrentUser,
     userSpeciesPrices,
     updateUserSpeciesPrices,
     updateFBUser,
