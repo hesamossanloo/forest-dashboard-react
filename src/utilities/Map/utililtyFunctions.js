@@ -66,15 +66,22 @@ export const isPointInsidePolygon = (point, polygonCoords) => {
     return false;
   }
 };
-export const isPointInsideMultiPolygon = (point, polygonCoords) => {
+export const isPointInsideFeature = (point, feature) => {
+  let isInside = false;
   try {
     const turfPoint = turf.point([point.lng, point.lat]);
-    const turfPolygon = turf.multiPolygon(polygonCoords);
-    return turf.booleanPointInPolygon(turfPoint, turfPolygon);
+    if (feature.geometry.type === 'Polygon') {
+      const turfPolygon = turf.polygon(feature.geometry.coordinates);
+      isInside = turf.booleanPointInPolygon(turfPoint, turfPolygon);
+    } else if (feature.geometry.type === 'MultiPolygon') {
+      const turfMultiPolygon = turf.multiPolygon(feature.geometry.coordinates);
+      isInside = turf.booleanPointInPolygon(turfPoint, turfMultiPolygon);
+    }
+    return isInside;
   } catch (error) {
     console.error('Error:', error);
-    return false;
   }
+  return isInside;
 };
 
 const getHKBGColor = (hk) => {

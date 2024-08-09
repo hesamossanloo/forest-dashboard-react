@@ -12,7 +12,7 @@ import {
 import SkogbrukWMSFeaturesHandler from './SkogbrukWMSFeaturesHandler';
 import {
   calculateBoundingBox,
-  isPointInsideMultiPolygon,
+  isPointInsideFeature,
   isPointInsideTeig,
   openHKPopupWithContent,
   validateAndCloseOnlyPolygonsCoordinates,
@@ -81,14 +81,9 @@ export default function CustomMapEvents(props) {
 
   useMapEvents({
     click: async (e) => {
-      // Assuming leaflet-pip is already included in your project
       let clickedOnHKGeoJSON = false;
 
       map.eachLayer((layer) => {
-        // if (layer.feature && !validateAndCloseLayersPolygonCoordinates(layer)) {
-        //   console.error('Invalid GeoJSON Layer:', layer);
-        //   return;
-        // }
         if (layer instanceof L.GeoJSON) {
           // Check each feature in the GeoJSON layer
           layer.eachLayer((feature) => {
@@ -98,7 +93,7 @@ export default function CustomMapEvents(props) {
 
             if (
               polygon.properties.teig_best_ &&
-              isPointInsideMultiPolygon(e.latlng, polygon.geometry.coordinates)
+              isPointInsideFeature(e.latlng, polygon)
             ) {
               clickedOnHKGeoJSON = true;
             }
@@ -130,9 +125,8 @@ export default function CustomMapEvents(props) {
 
         if (
           userForestTeig &&
-          isPointInsideTeig(
-            e.latlng,
-            userForestTeig.features[0].geometry.coordinates
+          userForestTeig.features.some((feature) =>
+            isPointInsideTeig(e.latlng, feature.geometry.coordinates)
           ) &&
           selectedVectorFeatureRef.current &&
           selectedVectorFeatureRef.current.properties

@@ -256,17 +256,7 @@ function Map() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapFilter]);
 
-  // Toggle DropDown
-  // const toggleDD = () => setDropdownOpen((prevState) => !prevState);
-
   const onEachFeature = (feature, geoJSONLayer) => {
-    // if (!validateAndCloseLayersPolygonCoordinates(geoJSONLayer)) {
-    //   console.error(
-    //     'Invalid GeoJSON Layer with teig_best_:',
-    //     geoJSONLayer.feature.properties.teig_best_
-    //   );
-    //   return;
-    // }
     geoJSONLayer.setStyle({
       fillColor: 'transparent',
       fillOpacity: 0,
