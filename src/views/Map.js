@@ -33,7 +33,6 @@ import CustomMapEvents from 'utilities/Map/CustomMapEvents';
 //   knutPolygonsPNGBounds,
 //   madsPolygonsPNGBounds,
 // } from 'variables/forest';
-import { validateAndCloseLayersPolygonCoordinates } from 'utilities/Map/utililtyFunctions.js';
 import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
@@ -521,9 +520,7 @@ function Map() {
                   <GeoJSON
                     ref={userPolygonsRef}
                     onEachFeature={onEachFeature}
-                    data={validateAndCloseLayersPolygonCoordinates(
-                      JSON.parse(currentUser.FBUser.forest.vector)
-                    )}
+                    data={JSON.parse(currentUser.FBUser.forest.vector)}
                   />
                   {/* {madsPolygons && selectedForest.name === 'forest1' && (
                     <GeoJSON

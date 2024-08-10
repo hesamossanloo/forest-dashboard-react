@@ -15,7 +15,6 @@ import {
   isPointInsideFeature,
   isPointInsideTeig,
   openHKPopupWithContent,
-  validateAndCloseOnlyPolygonsCoordinates,
   WFSFeatureLayerNamefromXML,
 } from './utililtyFunctions';
 
@@ -89,7 +88,6 @@ export default function CustomMapEvents(props) {
           layer.eachLayer((feature) => {
             // Get the polygon from the feature
             let polygon = feature.toGeoJSON();
-            polygon = validateAndCloseOnlyPolygonsCoordinates(polygon);
 
             if (
               polygon.properties.teig_best_ &&
