@@ -48,7 +48,27 @@ function Map() {
   const userPolygonsRef = useRef(null);
   const { currentUser } = useAuth();
   const [forestBounds, setForestBounds] = useState(null);
+  const [forestPNG, setForestPNG] = useState(null);
   const [userForestTeig, setUserForestTeig] = useState(null);
+
+  // New state variable to hold the user information from localstorage
+  const [persistedUser, setPersistedUser] = useState(currentUser);
+
+  useEffect(() => {
+    // Retrieve currentUser from local storage
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setPersistedUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  useEffect(() => {
+    // set the forest PNG
+    if (persistedUser && persistedUser.FBUser && persistedUser.FBUser.forest) {
+      setForestPNG(persistedUser.FBUser.forest.PNG);
+    }
+  }, [persistedUser]);
+
   // Handles the Map Filter states and the border colors
   useEffect(() => {
     const geoJsonLayer = userPolygonsRef.current;
@@ -76,15 +96,15 @@ function Map() {
   // if currentUser is logged in, chekc if it has forests. get the forests[0]
   // which is a geojson and find the bounds of it
   useEffect(() => {
-    if (currentUser && currentUser.FBUser && currentUser.FBUser.forest) {
-      const forest = currentUser.FBUser.forest.teig;
+    if (persistedUser && persistedUser.FBUser && persistedUser.FBUser.forest) {
+      const forest = persistedUser.FBUser.forest.teig;
       if (forest) {
         const bounds = L.geoJSON(JSON.parse(forest)).getBounds();
         setForestBounds(bounds);
         setUserForestTeig(JSON.parse(forest));
       }
     }
-  }, [currentUser, setUserForestTeig]);
+  }, [persistedUser, setUserForestTeig]);
 
   useEffect(() => {
     selectedVectorFeatureRef.current = selectedVectorFeature;
@@ -260,7 +280,7 @@ function Map() {
   };
   return (
     <>
-      {!currentUser || !forestBounds ? (
+      {!persistedUser || !forestBounds ? (
         <div className="spinner-container">
           <div className="spinner"></div>
         </div>
@@ -353,11 +373,15 @@ function Map() {
                 name="Skogbruksplan"
               >
                 <LayerGroup>
-                  <ImageOverlay
-                    url={currentUser.FBUser.forest.PNG}
-                    bounds={forestBounds}
-                    opacity={0.5}
-                  />
+                  {/* Forest PNG */}
+                  {forestPNG && (
+                    <ImageOverlay
+                      url={forestPNG}
+                      bounds={forestBounds}
+                      opacity={0.5}
+                    />
+                  )}
+                  {/* WMSTileLayer */}
                   <WMSTileLayer
                     url="https://wms.nibio.no/cgi-bin/skogbruksplan?"
                     layers="hogstklasser"
@@ -388,7 +412,7 @@ function Map() {
                   <GeoJSON
                     ref={userPolygonsRef}
                     onEachFeature={onEachFeature}
-                    data={JSON.parse(currentUser.FBUser.forest.vector)}
+                    data={JSON.parse(persistedUser.FBUser.forest.vector)}
                   />
                 </LayerGroup>
               </Overlay>

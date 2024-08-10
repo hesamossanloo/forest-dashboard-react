@@ -23,7 +23,11 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    // Retrieve the currentUser from local storage if it exists
+    const savedUser = localStorage.getItem('currentUser');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [userSpeciesPrices, setUserSpeciesPrices] = useState(initialPrices); // New state for prices
@@ -41,13 +45,17 @@ export const AuthProvider = ({ children }) => {
           if (FBUserData.prices) {
             setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
           }
-          setCurrentUser((prevUser) => ({
-            ...prevUser,
-            FBUser: {
-              ...prevUser.FBUser,
-              ...FBUserData,
-            },
-          }));
+          setCurrentUser((prevUser) => {
+            const updatedUser = {
+              ...prevUser,
+              FBUser: {
+                ...prevUser?.FBUser,
+                ...FBUserData,
+              },
+            };
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            return updatedUser;
+          });
         }
       } else {
         setAuthLoading(false);
@@ -57,6 +65,15 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // Save the currentUser to local storage whenever it changes
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  }, [currentUser]);
 
   // Provide authError and a method to clear it to the context consumers
   const clearError = () => setAuthError(null);
@@ -70,13 +87,17 @@ export const AuthProvider = ({ children }) => {
       if (userDoc.exists()) {
         // set doc for the new user
         await setDoc(userDocRef, user, { merge: true });
-        setCurrentUser((prevUser) => ({
-          ...prevUser,
-          FBUser: {
-            ...prevUser.FBUser,
-            forest: { ...prevUser.FBUser.forest, ...user.forest },
-          },
-        }));
+        setCurrentUser((prevUser) => {
+          const updatedUser = {
+            ...prevUser,
+            FBUser: {
+              ...prevUser?.FBUser,
+              forest: { ...prevUser?.FBUser?.forest, ...user.forest },
+            },
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
       }
     } catch (error) {
       setAuthError(error.message);
@@ -147,14 +168,18 @@ export const AuthProvider = ({ children }) => {
         // If the user document doesn't exist, create it with Airtable prices
         await setDoc(userDocRef, { prices: airtablePrices }, { merge: true });
         setUserSpeciesPrices(airtablePrices);
-        setCurrentUser((prevUser) => ({
-          ...prevUser,
-          FBUser: {
-            ...prevUser.FBUser,
-            email,
-            prices: airtablePrices,
-          },
-        }));
+        setCurrentUser((prevUser) => {
+          const updatedUser = {
+            ...prevUser,
+            FBUser: {
+              ...prevUser?.FBUser,
+              email,
+              prices: airtablePrices,
+            },
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
       } else {
         // Download Forest PNG image
         const forestID = user.uid;
@@ -181,16 +206,20 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
-        setCurrentUser((prevUser) => ({
-          ...prevUser,
-          ...user,
-          FBUser: {
-            ...prevUser.FBUser,
-            ...FBUserData,
-            prices: updatedPrices,
-            forest: { ...prevUser.FBUser.forest, PNG: PNGURL },
-          },
-        }));
+        setCurrentUser((prevUser) => {
+          const updatedUser = {
+            ...prevUser,
+            ...user,
+            FBUser: {
+              ...prevUser?.FBUser,
+              ...FBUserData,
+              forest: { ...prevUser?.FBUser?.forest, PNG: PNGURL },
+              prices: updatedPrices,
+            },
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
       }
       setAuthLoading(false);
       return { wasSuccessful: true };
@@ -229,16 +258,20 @@ export const AuthProvider = ({ children }) => {
           prices: airtablePrices,
         });
         setUserSpeciesPrices(airtablePrices);
-        setCurrentUser((prevUser) => ({
-          ...prevUser,
-          FBUser: {
-            ...prevUser.FBUser,
-            firstName: user.displayName.split(' ')[0],
-            lastName: user.displayName.split(' ')[1],
-            email: user.email,
-            prices: airtablePrices,
-          },
-        }));
+        setCurrentUser((prevUser) => {
+          const updatedUser = {
+            ...prevUser,
+            FBUser: {
+              ...prevUser?.FBUser,
+              firstName: user.displayName.split(' ')[0],
+              lastName: user.displayName.split(' ')[1],
+              email: user.email,
+              prices: airtablePrices,
+            },
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
       } else {
         // Download Forest PNG image
         const forestID = user.uid;
@@ -266,16 +299,20 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
-        setCurrentUser((prevUser) => ({
-          ...prevUser,
-          ...user,
-          FBUser: {
-            ...prevUser.FBUser,
-            ...FBUserData,
-            forest: { ...prevUser.FBUser.forest, PNG: PNGURL },
-            prices: updatedPrices,
-          },
-        }));
+        setCurrentUser((prevUser) => {
+          const updatedUser = {
+            ...prevUser,
+            ...user,
+            FBUser: {
+              ...prevUser.FBUser,
+              ...FBUserData,
+              forest: { ...prevUser.FBUser.forest, PNG: PNGURL },
+              prices: updatedPrices,
+            },
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
       }
       setAuthLoading(false);
       return { wasSuccessful: true };
@@ -290,10 +327,14 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true); // Set loading to true at the start of the function
     try {
       await signOut(auth);
+      setCurrentUser(null); // Clear the current user state
+      localStorage.removeItem('currentUser'); // Remove user data from local storage
+
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing out:', error);
       setAuthError(error.message);
+      return { wasSuccessful: false };
     } finally {
       setAuthLoading(false);
     }

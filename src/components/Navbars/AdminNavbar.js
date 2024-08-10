@@ -44,6 +44,17 @@ function AdminNavbar(props) {
   const [color, setcolor] = useState('navbar-map');
   const { currentUser, logout } = useAuth();
 
+  // New state variable to hold the user information from localstorage
+  const [persistedUser, setPersistedUser] = useState(currentUser);
+
+  useEffect(() => {
+    // Retrieve currentUser from local storage
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setPersistedUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const toggleModal = () => {
     setModalOpen(!modalOpen);
   };
@@ -182,9 +193,11 @@ function AdminNavbar(props) {
                   </NavLink>
                 </DropdownMenu>
               </UncontrolledDropdown> */}
-              {currentUser ? (
+              {persistedUser ? (
                 <>
-                  <span className="navbar-text mr-3">{currentUser.email}</span>
+                  <span className="navbar-text mr-3">
+                    {persistedUser.email}
+                  </span>
 
                   <Button color="danger" onClick={handleLogout}>
                     Logout
