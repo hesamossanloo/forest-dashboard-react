@@ -589,7 +589,7 @@ export const generateHKPopupContent = (
       </tr>` +
       // Add Hogstklasse
       `<tr style="border: 1px solid black; background-color: ${rowBGColor}">
-        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['hogstkl_verdi']}</td>
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['hogstkl_ve']}</td>
         <td style="padding: 5px; border: 1px solid black; font-weight: bold;">${sumObj.hogstkl_verdi}</td>
         <td style="padding: 5px; border: 1px solid black; text-align: center;">
           <span style="padding: 5px; background-color: transparent; text-align: center;">

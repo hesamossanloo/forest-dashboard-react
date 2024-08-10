@@ -76,13 +76,13 @@ function Map() {
       geoJsonLayer.eachLayer((layer) => {
         const feature = layer.feature;
         if (!previousGeoJSONLayersRef.current.includes(layer)) {
-          if (feature.properties.hogstkl_verdi === '5') {
+          if (feature.properties.hogstkl_ve === '5') {
             layer.setStyle({
               color: mapFilter.HK5 ? '#de6867' : 'blue',
               weight: mapFilter.HK5 ? 6 : 1,
             });
           }
-          if (feature.properties.hogstkl_verdi === '4') {
+          if (feature.properties.hogstkl_ve === '4') {
             layer.setStyle({
               color: mapFilter.HK4 ? '#bc8963' : 'blue',
               weight: mapFilter.HK4 ? 6 : 1,
@@ -126,12 +126,12 @@ function Map() {
       if (previousGeoJSONLayersRef.current.includes(geoJSONLayer)) {
         previousGeoJSONLayersRef.current.forEach((lr) => {
           // Handle if the HK5 & 4 filter is avtive for red and green colors
-          if (lr.feature.properties.hogstkl_verdi === '5') {
+          if (lr.feature.properties.hogstkl_ve === '5') {
             lr.setStyle({
               color: mapFilter.HK5 ? '#de6867' : 'blue', // Color for the border
               weight: mapFilter.HK5 ? 6 : 1,
             });
-          } else if (lr.feature.properties.hogstkl_verdi === '4') {
+          } else if (lr.feature.properties.hogstkl_ve === '4') {
             lr.setStyle({
               color: mapFilter.HK4 ? '#bc8963' : 'blue', // Color for the border
               weight: mapFilter.HK4 ? 6 : 1,
@@ -149,12 +149,12 @@ function Map() {
         // unhighlight all the previous layer and highlight th enew layer
         if (previousGeoJSONLayersRef.current.length > 0) {
           previousGeoJSONLayersRef.current.forEach((lr) => {
-            if (lr.feature.properties.hogstkl_verdi === '5') {
+            if (lr.feature.properties.hogstkl_ve === '5') {
               lr.setStyle({
                 color: mapFilter.HK5 ? '#de6867' : 'blue',
                 weight: mapFilter.HK5 ? 6 : 1,
               });
-            } else if (lr.feature.properties.hogstkl_verdi === '4') {
+            } else if (lr.feature.properties.hogstkl_ve === '4') {
               lr.setStyle({
                 color: mapFilter.HK4 ? '#bc8963' : 'blue',
                 weight: mapFilter.HK4 ? 6 : 1,
@@ -178,12 +178,12 @@ function Map() {
       // then remove it from the previous one and turn it blue
       if (previousGeoJSONLayersRef.current.includes(geoJSONLayer)) {
         // If the HK5 & 4 filter is active for red and green colors
-        if (feature.properties.hogstkl_verdi === '5') {
+        if (feature.properties.hogstkl_ve === '5') {
           geoJSONLayer.setStyle({
             color: mapFilter.HK5 ? '#de6867' : 'blue', // Color for the border
             weight: mapFilter.HK5 ? 6 : 1,
           });
-        } else if (feature.properties.hogstkl_verdi === '4') {
+        } else if (feature.properties.hogstkl_ve === '4') {
           geoJSONLayer.setStyle({
             color: mapFilter.HK4 ? '#bc8963' : 'blue', // Color for the border
             weight: mapFilter.HK4 ? 6 : 1,
