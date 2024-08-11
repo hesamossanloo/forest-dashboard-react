@@ -42,6 +42,18 @@ export const AuthProvider = ({ children }) => {
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const FBUserData = userDoc.data();
+          // Download Forest PNG image
+          const forestID = user.uid;
+          const data = await downloadS3File(
+            S3_OUTPUTS_BUCKET_NAME,
+            `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+          );
+          if (data && data.Body) {
+            // Convert the downloaded data to a base64 URL
+            const base64Data = Buffer.from(data.Body).toString('base64');
+            const PNGURL = `data:image/png;base64,${base64Data}`;
+            FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
+          }
           if (FBUserData.prices) {
             setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
           }

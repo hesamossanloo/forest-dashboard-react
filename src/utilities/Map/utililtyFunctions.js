@@ -56,16 +56,6 @@ export const validateAndCloseOnlyPolygonsCoordinates = (polygons) => {
   return polygons;
 };
 
-export const isPointInsidePolygon = (point, polygonCoords) => {
-  try {
-    const turfPoint = turf.point([point.lng, point.lat]);
-    const turfPolygon = turf.polygon(polygonCoords);
-    return turf.booleanPointInPolygon(turfPoint, turfPolygon);
-  } catch (error) {
-    console.error('Error:', error);
-    return false;
-  }
-};
 export const isPointInsideFeature = (point, feature) => {
   let isInside = false;
   try {

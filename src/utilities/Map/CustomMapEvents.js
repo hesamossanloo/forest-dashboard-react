@@ -13,7 +13,6 @@ import SkogbrukWMSFeaturesHandler from './SkogbrukWMSFeaturesHandler';
 import {
   calculateBoundingBox,
   isPointInsideFeature,
-  isPointInsideTeig,
   openHKPopupWithContent,
   WFSFeatureLayerNamefromXML,
 } from './utililtyFunctions';
@@ -85,7 +84,7 @@ export default function CustomMapEvents(props) {
 
       if (
         userForestTeig.features.some((feature) =>
-          isPointInsideTeig(e.latlng, feature.geometry.coordinates)
+          isPointInsideFeature(e.latlng, feature)
         ) &&
         !clickedOnHKGeoJSON
       ) {
@@ -108,7 +107,7 @@ export default function CustomMapEvents(props) {
         if (
           userForestTeig &&
           userForestTeig.features.some((feature) =>
-            isPointInsideTeig(e.latlng, feature.geometry.coordinates)
+            isPointInsideFeature(e.latlng, feature)
           ) &&
           selectedVectorFeatureRef.current &&
           selectedVectorFeatureRef.current.properties
