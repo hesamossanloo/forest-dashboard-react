@@ -58,13 +58,16 @@ export default function SignIn() {
       if (
         currentUser.FBUser &&
         currentUser.FBUser.forest &&
-        currentUser.FBUser.forest.teig &&
-        currentUser.FBUser.forest.vector &&
-        currentUser.FBUser.forest.PNG
+        currentUser.FBUser.forest.teig
       ) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
         navigate('/find'); // Navigate to the dashboard
+      }
+    } else {
+      // Handle the error
+      if (response.error === 'The specified key does not exist.') {
+        navigate('/find');
       }
     }
   };
@@ -76,13 +79,16 @@ export default function SignIn() {
         currentUser &&
         currentUser.FBUser &&
         currentUser.FBUser.forest &&
-        currentUser.FBUser.forest.teig &&
-        currentUser.FBUser.forest.vector &&
-        currentUser.FBUser.forest.PNG
+        currentUser.FBUser.forest.teig
       ) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
         navigate('/find'); // Navigate to the dashboard
+      }
+    } else {
+      // Handle the error
+      if (response.error === 'The specified key does not exist.') {
+        navigate('/find');
       }
     }
   };
