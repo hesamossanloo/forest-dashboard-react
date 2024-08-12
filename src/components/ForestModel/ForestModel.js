@@ -22,10 +22,11 @@ const ForestModel = () => {
     const interval = setInterval(async () => {
       if (currentUser) {
         setSHPFileExists(true);
+        setModalOpen(true);
       } else {
         clearInterval(interval);
       }
-    }, 180000); // Check every 3 minutes
+    }, 240000); // Check every 3 minutes
 
     return () => clearInterval(interval);
   }, [currentUser]);

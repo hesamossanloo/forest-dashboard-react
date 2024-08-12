@@ -7,6 +7,8 @@ import {
   unwantedMISFeatureKeys,
 } from 'variables/forest';
 
+import pako from 'pako';
+
 export const convertAndformatTheStringArealM2ToDAA = (arealM2) => {
   const retArealm2 = parseInt(arealM2) / 1000;
   return formatNumber(retArealm2, 'nb-NO', 2); // Format with the decimal
@@ -929,4 +931,15 @@ export const createMISButton = (MISConetntDiv, MISFeature, e, map) => {
   MISButton.addEventListener('click', createCollapsibleContent);
   MISConetntDiv.appendChild(MISButton);
   return MISConetntDiv;
+};
+
+export const decompressBase64ToGeoJSON = (base64CompressedGeoJson) => {
+  const binaryString = atob(base64CompressedGeoJson);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const decompressedGeoJson = pako.ungzip(bytes, { to: 'string' });
+  return JSON.parse(decompressedGeoJson);
 };

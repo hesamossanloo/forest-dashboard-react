@@ -16,7 +16,7 @@ const ForestSR16Intersection = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const { currentUser } = useAuth();
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     // Check if the file exists every 5 seconds
     const interval = setInterval(async () => {
@@ -41,6 +41,7 @@ const ForestSR16Intersection = () => {
       navigate('/model');
     } else {
       setRequestSent(true);
+      setIsLoading(true);
       try {
         const requestPayload = JSON.stringify({
           yield_requirement: 0.03,
@@ -51,7 +52,11 @@ const ForestSR16Intersection = () => {
           return Promise.race([
             fetch(url, options),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Request timed out')), timeout)
+              setTimeout(() => {
+                reject(new Error('Request timed out'));
+                setIsLoading(false);
+                navigate('/model');
+              }, timeout)
             ),
           ]);
         };
@@ -65,8 +70,11 @@ const ForestSR16Intersection = () => {
             body: requestPayload,
           }
         );
+        setIsLoading(false);
         navigate('/model');
       } catch (error) {
+        setRequestSent(false); // Reset the state if there's an error
+        setIsLoading(false);
         console.error('Error:', error);
       }
     }
@@ -115,6 +123,11 @@ const ForestSR16Intersection = () => {
             </Button>
           </ModalFooter>
         </Modal>
+      )}
+      {isLoading && (
+        <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
       )}
     </>
   );

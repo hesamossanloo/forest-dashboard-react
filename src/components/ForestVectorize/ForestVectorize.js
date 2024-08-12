@@ -103,6 +103,7 @@ const ForestVectorize = () => {
   const handleForestConfirm = async () => {
     navigate('/featureInfo');
   };
+
   return (
     <>
       {VectorFileExists && currentUser ? (

@@ -26,6 +26,7 @@ const ForestCut = () => {
   const [bounds, setBounds] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // get the current user uid
   const { currentUser, updateFBUser } = useAuth();
@@ -131,6 +132,7 @@ const ForestCut = () => {
       return; // Prevent multiple requests
     }
 
+    setIsLoading(true);
     // Assuming bounds is a custom object, convert it to a plain JavaScript object
     const plainBounds = JSON.parse(JSON.stringify(bounds));
 
@@ -142,6 +144,7 @@ const ForestCut = () => {
     try {
       setRequestSent(true); // Mark the request as sent
       if (VectorFileExists) {
+        setIsLoading(false);
         navigate('/vectorize');
       } else {
         // Set a timeout for the fetch request
@@ -149,7 +152,11 @@ const ForestCut = () => {
           return Promise.race([
             fetch(url, options),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Request timed out')), timeout)
+              setTimeout(() => {
+                reject(new Error('Request timed out'));
+                setIsLoading(false);
+                navigate('/vectorize');
+              }, timeout)
             ),
           ]);
         };
@@ -163,11 +170,13 @@ const ForestCut = () => {
             body: currentUser.FBUser.forest.teig, // Ensure the body is a JSON string
           }
         );
+        setIsLoading(false);
         navigate('/vectorize');
       }
     } catch (error) {
-      console.error('Error:', error);
       setRequestSent(false); // Reset the state if there's an error
+      setIsLoading(false);
+      console.error('Error:', error);
     }
   };
 
@@ -221,6 +230,11 @@ const ForestCut = () => {
             </Button>
           </ModalFooter>
         </Modal>
+      )}
+      {isLoading && (
+        <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
       )}
     </>
   );
