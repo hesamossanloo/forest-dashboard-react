@@ -58,7 +58,9 @@ export default function SignIn() {
       if (
         currentUser.FBUser &&
         currentUser.FBUser.forest &&
-        currentUser.FBUser.forest.teig
+        currentUser.FBUser.forest.teig &&
+        currentUser.FBUser.forest.vector &&
+        currentUser.FBUser.forest.PNG
       ) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
@@ -74,7 +76,9 @@ export default function SignIn() {
         currentUser &&
         currentUser.FBUser &&
         currentUser.FBUser.forest &&
-        currentUser.FBUser.forest.teig
+        currentUser.FBUser.forest.teig &&
+        currentUser.FBUser.forest.vector &&
+        currentUser.FBUser.forest.PNG
       ) {
         navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
       } else {
@@ -184,12 +188,7 @@ export default function SignIn() {
         </Grid>
       </Box>
       {authError && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          align="center"
-          sx={{ mt: 5 }}
-        >
+        <Typography variant="body2" color="error" align="center" sx={{ mt: 5 }}>
           {authError}
         </Typography>
       )}
