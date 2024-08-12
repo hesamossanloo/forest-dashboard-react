@@ -43,7 +43,7 @@ const MapComponent = ({ geoJson }) => {
 const ForestFinder = () => {
   const navigate = useNavigate();
   const [requestSent, setRequestSent] = useState(false);
-  const { currentUser, updateFBUser, logout, authErro } = useAuth();
+  const { currentUser, updateFBUser, logout } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoaidng, setIsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
