@@ -27,7 +27,6 @@ const ForestFeatureInfo = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const hasDownloaded = useRef(false); // Use a ref to track if the file has been downloaded
 
-  // get the current user uid
   const { currentUser, updateFBUser } = useAuth();
 
   useEffect(() => {
@@ -46,7 +45,7 @@ const ForestFeatureInfo = () => {
       } else {
         clearInterval(interval);
       }
-    }, 120000); // Check every 5 seconds
+    }, 120000); // Check every 2 minutes
 
     // Check once if the file exists
     checkFile();
