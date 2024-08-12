@@ -332,6 +332,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Error signing in with Google:', error);
       setAuthLoading(false);
       setAuthError(error.message);
+      return { wasSuccessful: false, error: error.message }; // Indicate failure and return early
     }
   };
 
