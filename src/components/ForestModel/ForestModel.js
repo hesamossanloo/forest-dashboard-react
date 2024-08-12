@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useAuth } from 'contexts/AuthContext';
 import { useEffect, useState } from 'react';
-import './ForestSR16Intersection.scss';
+import './ForestModel.scss';
 
 import ForestScene from 'components/ForestScene/ForestScene';
 import 'leaflet/dist/leaflet.css';
@@ -9,12 +9,12 @@ import { Button, Modal, ModalFooter } from 'reactstrap';
 
 import { useNavigate } from 'react-router-dom';
 
-const ForestSR16Intersection = () => {
+const ForestModel = () => {
   const navigate = useNavigate();
 
   const [SHPFileExists, setSHPFileExists] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [requestSent, setRequestSent] = useState(false);
+
   // get the current user uid
   const { currentUser } = useAuth();
 
@@ -23,7 +23,6 @@ const ForestSR16Intersection = () => {
     const interval = setInterval(async () => {
       if (currentUser) {
         setSHPFileExists(true);
-        setModalOpen(true);
       } else {
         clearInterval(interval);
       }
@@ -37,54 +36,21 @@ const ForestSR16Intersection = () => {
   };
 
   const handleForestConfirm = async () => {
-    if (requestSent) {
-      console.log('Request already sent. So not sending again!');
-      navigate('/model');
-    } else {
-      setRequestSent(true);
-      try {
-        const requestPayload = JSON.stringify({
-          yield_requirement: 0.03,
-          forestID: currentUser.uid,
-        });
-        // Set a timeout for the fetch request
-        const fetchWithTimeout = (url, options, timeout = 29000) => {
-          return Promise.race([
-            fetch(url, options),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Request timed out')), timeout)
-            ),
-          ]);
-        };
-        await fetchWithTimeout(
-          'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/model',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: requestPayload,
-          }
-        );
-        navigate('/model');
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
+    navigate('/admin/map');
   };
   return (
     <>
       {SHPFileExists && currentUser ? (
         <>
           <div className="title">
-            <h1>STEP 5/6 for your Skogbruksplan is done!</h1>
+            <h1>STEP 6/6 for your Skogbruksplan is done!</h1>
           </div>
         </>
       ) : (
         <>
           <div className="title">
             <h1>
-              Step 5/6 Finalizing your foresrt plan. Based on the size of your
+              Step 6/6 Finalizing your forestry plan. Based on the size of your
               forest, this could take up to 5 minutes.
             </h1>
           </div>
@@ -95,7 +61,7 @@ const ForestSR16Intersection = () => {
         <Modal isOpen={modalOpen} toggle={toggleModal}>
           <div className="modal-header">
             <h2 className="modal-title" id="exampleModalLabel">
-              We&apos;re getting closer! Let&apos;s proceed to final step.
+              So Exciting! Are you ready to see your Forestry plan?
             </h2>
             <button
               type="button"
@@ -121,4 +87,4 @@ const ForestSR16Intersection = () => {
   );
 };
 
-export default ForestSR16Intersection;
+export default ForestModel;

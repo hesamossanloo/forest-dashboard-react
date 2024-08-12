@@ -163,7 +163,7 @@ const ForestFeatureInfo = () => {
       {SHPFileExists && currentUser ? (
         <>
           <div className="title">
-            <h1>STEP 3/4 for your Skogbruksplan is done!</h1>
+            <h1>STEP 4/6 for your Skogbruksplan is done!</h1>
           </div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
@@ -176,7 +176,7 @@ const ForestFeatureInfo = () => {
         <>
           <div className="title">
             <h1>
-              Step 3/4 Bestands Info Gathering: Please wait while we are
+              Step 4/6 Bestands Info Gathering: Please wait while we are
               preparing the Skogbruksplan for your forest. Based on the size of
               your forest, this could take up to 5 minutes.
             </h1>

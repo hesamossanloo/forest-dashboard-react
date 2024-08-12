@@ -176,7 +176,7 @@ const ForestCut = () => {
       {PNGFileExists && currentUser && forestHKPNG ? (
         <>
           <div className="title">
-            <h1>STEP 1/4 for your Skogbruksplan is done!</h1>
+            <h1>STEP 2/6 for your Skogbruksplan is done!</h1>
           </div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
@@ -189,8 +189,8 @@ const ForestCut = () => {
         <>
           <div className="title">
             <h1>
-              Step 1/4 Color Creation: Please wait while we are preparing the
-              Skogbruksplan for your forest...
+              Step 2/6 Skogbruksplan Color Codings: Please wait while we are
+              preparing the Skogbruksplan for your forest...
             </h1>
           </div>
           <ForestScene />

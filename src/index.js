@@ -5,6 +5,7 @@ import 'assets/scss/black-dashboard-react.scss';
 import ForestCut from 'components/ForestCut/ForestCut';
 import ForestFeatureInfo from 'components/ForestFeatureInfo/ForestFeatureInfo';
 import ForestFinder from 'components/ForestFinder/ForestFinder';
+import ForestModel from 'components/ForestModel/ForestModel';
 import ForestSR16Intersection from 'components/ForestSR16Intersection/ForestSR16Intersection';
 import ForestVectorize from 'components/ForestVectorize/ForestVectorize';
 import ForgotPassword from 'components/ForgotPassword/ForgotPassword';
@@ -52,6 +53,7 @@ root.render(
               path="/SR16Intersection"
               element={<ForestSR16Intersection />}
             />
+            <Route path="/model" element={<ForestModel />} />
             <Route path="*" element={<SignIn />} />
           </Routes>
         </BrowserRouter>

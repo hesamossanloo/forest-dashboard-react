@@ -47,10 +47,8 @@ const ForestFinder = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoaidng, setIsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [kommunenummer, setKommunenummer] = useState('3226');
-  const [matrikkelnummer, setMatrikkelnummer] = useState(
-    '167/1, 167/49, 167/50, 173/1, 173/12'
-  );
+  const [kommunenummer, setKommunenummer] = useState('');
+  const [matrikkelnummer, setMatrikkelnummer] = useState('');
   const [matrikkelnummerList, setMatrikkelnummerList] = useState([]);
   const [kommunenummerList, setKommunenummerList] = useState([]);
   const [error, setError] = useState('');
@@ -186,7 +184,7 @@ const ForestFinder = () => {
 
   return (
     <div className="forestFinderContainer">
-      <h1>Find Your Forest</h1>
+      <h1>STEP 1/6: Find Your Forest</h1>
       <div>
         <Label>Enter your Kommunenummer:</Label>
       </div>
