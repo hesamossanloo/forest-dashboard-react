@@ -14,6 +14,7 @@ import { Button, Modal, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 
 import { doc, getDoc } from 'firebase/firestore';
+import pako from 'pako';
 import { useRef } from 'react';
 import { db } from 'services/firebase';
 import shp from 'shpjs';
@@ -26,7 +27,7 @@ const ForestFeatureInfo = () => {
   const [AllPolygonsGeoJson, setAllPolygonsGeoJson] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const hasDownloaded = useRef(false); // Use a ref to track if the file has been downloaded
-
+  const [isLoading, setIsLoading] = useState(false);
   const { currentUser, updateFBUser } = useAuth();
 
   useEffect(() => {
@@ -55,41 +56,76 @@ const ForestFeatureInfo = () => {
 
   // if file is ready download it from s3 and save it under the folder assets/data
   useEffect(() => {
-    const downloadFile = async () => {
-      const forestID = currentUser.uid;
-      const shpFile = await downloadS3File(
-        S3_OUTPUTS_BUCKET_NAME,
-        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
-      );
-      const shxFile = await downloadS3File(
-        S3_OUTPUTS_BUCKET_NAME,
-        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
-      );
-      const dbfFile = await downloadS3File(
-        S3_OUTPUTS_BUCKET_NAME,
-        `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
-      );
+    try {
+      const downloadFile = async () => {
+        const forestID = currentUser.uid;
+        const shpFile = await downloadS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+        );
+        const shxFile = await downloadS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
+        );
+        const dbfFile = await downloadS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
+        );
 
-      if (shpFile && shxFile && dbfFile) {
-        // Convert SHP files to GeoJSON
-        const geoJsonWithInfos = await shp({
-          shp: shpFile.Body,
-          shx: shxFile.Body,
-          dbf: dbfFile.Body,
-        });
-        setAllPolygonsGeoJson(geoJsonWithInfos);
-        await updateFBUser({
-          ...currentUser.FBUser,
-          forest: {
-            ...currentUser.FBUser.forest,
-            vector: JSON.stringify(geoJsonWithInfos),
-          },
-        });
+        if (shpFile && shxFile && dbfFile) {
+          // Convert SHP files to GeoJSON
+          const geoJsonWithInfos = await shp({
+            shp: shpFile.Body,
+            shx: shxFile.Body,
+            dbf: dbfFile.Body,
+          });
+          setAllPolygonsGeoJson(geoJsonWithInfos);
+
+          // Compress the GeoJSON data
+          const geoJsonString = JSON.stringify(geoJsonWithInfos);
+          const compressedGeoJson = pako.gzip(geoJsonString);
+          // Convert compressed data to base64 string in chunks
+          const uint8Array = new Uint8Array(compressedGeoJson);
+          let base64CompressedGeoJson = '';
+          for (let i = 0; i < uint8Array.length; i += 3) {
+            base64CompressedGeoJson += btoa(
+              String.fromCharCode(
+                uint8Array[i],
+                uint8Array[i + 1],
+                uint8Array[i + 2]
+              )
+            );
+          }
+
+          // Handle the remaining bytes
+          if (uint8Array.length % 3 === 1) {
+            base64CompressedGeoJson += btoa(
+              String.fromCharCode(uint8Array[uint8Array.length - 1])
+            );
+          } else if (uint8Array.length % 3 === 2) {
+            base64CompressedGeoJson += btoa(
+              String.fromCharCode(
+                uint8Array[uint8Array.length - 2],
+                uint8Array[uint8Array.length - 1]
+              )
+            );
+          }
+
+          await updateFBUser({
+            ...currentUser.FBUser,
+            forest: {
+              ...currentUser.FBUser.forest,
+              vector: base64CompressedGeoJson,
+            },
+          });
+        }
+      };
+      if (SHPFileExists && !hasDownloaded.current) {
+        hasDownloaded.current = true;
+        downloadFile();
       }
-    };
-    if (SHPFileExists && !hasDownloaded.current) {
-      hasDownloaded.current = true;
-      downloadFile();
+    } catch (error) {
+      console.error('Error:', error);
     }
   }, [SHPFileExists, currentUser]);
 
@@ -118,6 +154,7 @@ const ForestFeatureInfo = () => {
       navigate('/SR16Intersection');
     } else {
       try {
+        setIsLoading(true);
         let requestPayload = null;
         setRequestSent(true); // Mark the request as sent
         if (currentUser.FBUser.forest && currentUser.FBUser.forest.teig) {
@@ -137,7 +174,11 @@ const ForestFeatureInfo = () => {
           return Promise.race([
             fetch(url, options),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Request timed out')), timeout)
+              setTimeout(() => {
+                reject(new Error('Request timed out'));
+                setIsLoading(false);
+                navigate('/SR16Intersection');
+              }, timeout)
             ),
           ]);
         };
@@ -151,8 +192,11 @@ const ForestFeatureInfo = () => {
             body: requestPayload,
           }
         );
+        setIsLoading(false);
         navigate('/SR16Intersection');
       } catch (error) {
+        setRequestSent(false); // Reset the state if there's an error
+        setIsLoading(false);
         console.error('Error:', error);
       }
     }
@@ -208,6 +252,11 @@ const ForestFeatureInfo = () => {
             </Button>
           </ModalFooter>
         </Modal>
+      )}
+      {isLoading && (
+        <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
       )}
     </>
   );

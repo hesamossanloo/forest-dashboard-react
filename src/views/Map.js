@@ -15,6 +15,7 @@ import {
 } from 'react-leaflet';
 import { Button } from 'reactstrap';
 import CustomMapEvents from 'utilities/Map/CustomMapEvents';
+import { decompressBase64ToGeoJSON } from 'utilities/Map/utililtyFunctions.js';
 import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
@@ -412,7 +413,9 @@ function Map() {
                   <GeoJSON
                     ref={userPolygonsRef}
                     onEachFeature={onEachFeature}
-                    data={JSON.parse(persistedUser.FBUser.forest.vector)}
+                    data={decompressBase64ToGeoJSON(
+                      persistedUser.FBUser.forest.vector
+                    )}
                   />
                 </LayerGroup>
               </Overlay>

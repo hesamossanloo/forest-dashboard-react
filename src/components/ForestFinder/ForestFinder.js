@@ -45,7 +45,7 @@ const ForestFinder = () => {
   const [requestSent, setRequestSent] = useState(false);
   const { currentUser, updateFBUser, logout } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoaidng, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [kommunenummer, setKommunenummer] = useState('');
   const [matrikkelnummer, setMatrikkelnummer] = useState('');
@@ -233,7 +233,7 @@ const ForestFinder = () => {
           <MapComponent geoJson={geoJson} /> {/* Use the new component here */}
         </MapContainer>
       </div>
-      {isLoaidng && (
+      {isLoading && (
         <div className="spinner-container">
           <div className="spinner"></div>
         </div>
