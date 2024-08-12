@@ -27,11 +27,11 @@ const HKFilters = () => {
       const rowFields = row.fields;
       const rowV = parseFloat(rowFields.volume) || 0;
       rowFields.avg_price_m3 = calculateAvgPrice(rowFields, userSpeciesPrices);
-      if (mapFilter.HK5 && rowFields.hogstkl_ve === 5) {
+      if (mapFilter.HK5 && rowFields.hogstkl_verdi === 5) {
         sumV += rowV;
         sumWorth += rowV * (rowFields.avg_price_m3 || 0);
       }
-      if (mapFilter.HK4 && rowFields.hogstkl_ve === 4) {
+      if (mapFilter.HK4 && rowFields.hogstkl_verdi === 4) {
         sumV += rowV;
         sumWorth += rowV * (rowFields.avg_price_m3 || 0);
       }
