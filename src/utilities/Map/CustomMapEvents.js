@@ -12,8 +12,7 @@ import {
 import SkogbrukWMSFeaturesHandler from './SkogbrukWMSFeaturesHandler';
 import {
   calculateBoundingBox,
-  isPointInsidePolygon,
-  isPointInsideTeig,
+  isPointInsideFeature,
   openHKPopupWithContent,
   WFSFeatureLayerNamefromXML,
 } from './utililtyFunctions';
@@ -30,11 +29,7 @@ CustomMapEvents.propTypes = {
   selectedVectorFeatureRef: PropTypes.object.isRequired,
   multiPolygonSwitchIsON: PropTypes.bool.isRequired,
   deselectPolygons: PropTypes.bool.isRequired,
-  madsTeig: PropTypes.object.isRequired,
-  bjoernTeig: PropTypes.object.isRequired,
-  knutTeig: PropTypes.object.isRequired,
-  akselTeig: PropTypes.object.isRequired,
-  selectedForest: PropTypes.object.isRequired,
+  userForestTeig: PropTypes.object.isRequired,
 };
 
 export default function CustomMapEvents(props) {
@@ -43,25 +38,15 @@ export default function CustomMapEvents(props) {
     setActiveOverlay,
     setDeselectPolygons,
     selectedVectorFeatureRef,
-    madsTeig,
-    bjoernTeig,
-    knutTeig,
-    akselTeig,
+    userForestTeig,
     multiPolygonSwitchIsON,
     deselectPolygons,
-    selectedForest,
   } = props;
   const map = useMap();
   const [selectedFeatures, setSelectedFeatures] = useState([]);
   const { airTableBestandInfos, isFetchingAirtableRecords, airTableTooltips } =
     useAirtable();
   const { userSpeciesPrices } = useAuth();
-
-  // Check if the click is within the coordinates of a GeoJSON
-  // In this case I am passing in the Mad's forest Teig Polygon
-  const forests = [madsTeig, bjoernTeig, knutTeig, akselTeig];
-  const forestName = selectedForest.name;
-  const chosenForest = forests.find((forest) => forest.name === forestName);
 
   useEffect(() => {
     if (deselectPolygons) {
@@ -74,11 +59,10 @@ export default function CustomMapEvents(props) {
       setSelectedFeatures([...selectedFeatures]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiPolygonSwitchIsON, deselectPolygons]); // Dependency array includes multiPolygonSwitchIsON
+  }, [multiPolygonSwitchIsON, deselectPolygons]);
 
   useMapEvents({
     click: async (e) => {
-      // Assuming leaflet-pip is already included in your project
       let clickedOnHKGeoJSON = false;
 
       map.eachLayer((layer) => {
@@ -86,11 +70,11 @@ export default function CustomMapEvents(props) {
           // Check each feature in the GeoJSON layer
           layer.eachLayer((feature) => {
             // Get the polygon from the feature
-            const polygon = feature.toGeoJSON();
+            let polygon = feature.toGeoJSON();
 
             if (
-              polygon.properties.teig_best_nr &&
-              isPointInsidePolygon(e.latlng, polygon.geometry.coordinates)
+              polygon.properties.teig_best_ &&
+              isPointInsideFeature(e.latlng, polygon)
             ) {
               clickedOnHKGeoJSON = true;
             }
@@ -99,9 +83,8 @@ export default function CustomMapEvents(props) {
       });
 
       if (
-        isPointInsideTeig(
-          e.latlng,
-          chosenForest.features[0].geometry.coordinates
+        userForestTeig.features.some((feature) =>
+          isPointInsideFeature(e.latlng, feature)
         ) &&
         !clickedOnHKGeoJSON
       ) {
@@ -122,10 +105,9 @@ export default function CustomMapEvents(props) {
         map.closePopup();
 
         if (
-          chosenForest &&
-          isPointInsideTeig(
-            e.latlng,
-            chosenForest.features[0].geometry.coordinates
+          userForestTeig &&
+          userForestTeig.features.some((feature) =>
+            isPointInsideFeature(e.latlng, feature)
           ) &&
           selectedVectorFeatureRef.current &&
           selectedVectorFeatureRef.current.properties
@@ -133,7 +115,7 @@ export default function CustomMapEvents(props) {
           let MISClickedFeatureInfos;
 
           const teigBestNrLastSelected =
-            selectedVectorFeatureRef.current.properties.teig_best_nr;
+            selectedVectorFeatureRef.current.properties.teig_best_;
 
           // Handle MIS Layer (Forbidden areas WMS)
           if (
@@ -187,7 +169,7 @@ export default function CustomMapEvents(props) {
               teigBestNrLastSelected &&
               !selectedFeatures.some(
                 (feature) =>
-                  feature.properties?.teig_best_nr === teigBestNrLastSelected
+                  feature.properties?.teig_best_ === teigBestNrLastSelected
               )
             ) {
               // If NOT the add to selected features for multi selection mode
@@ -220,7 +202,7 @@ export default function CustomMapEvents(props) {
               teigBestNrLastSelected &&
               !selectedFeatures.some(
                 (feature) =>
-                  feature.properties?.teig_best_nr === teigBestNrLastSelected
+                  feature.properties?.teig_best_ === teigBestNrLastSelected
               )
             ) {
               // If NOT the add to selected features for multi selection mode
@@ -246,8 +228,8 @@ export default function CustomMapEvents(props) {
               // Remove the clicked polygon from the selectedFeatures
               const newSelectedFeatures = selectedFeatures.filter(
                 (feature) =>
-                  feature.properties?.teig_best_nr !==
-                  selectedVectorFeatureRef.current.properties?.teig_best_nr
+                  feature.properties?.teig_best_ !==
+                  selectedVectorFeatureRef.current.properties?.teig_best_
               );
               setSelectedFeatures(newSelectedFeatures);
               if (

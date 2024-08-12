@@ -97,12 +97,12 @@ export const akselPolygonsPNGBounds = [
 export const unwantedMISFeatureKeys = ['boundedBy', 'uuid_tekst', 'ogc_fid'];
 
 export const desiredFeatInfoAttrHKLayer = {
-  teig_best_nr: 'Bestand nr',
-  hogstkl_verdi: 'Hogstklasse',
-  bonitet_beskrivelse: 'Bonitet',
-  bontre_beskrivelse: 'Treslag',
+  teig_best_: 'Bestand nr',
+  hogstkl_ve: 'Hogstklasse',
+  bonitet_bes: 'Bonitet',
+  bontre_be: 'Treslag',
   alder: 'Alder',
-  arealDAA: 'Areal',
+  areal: 'Areal',
   carbon_stored: 'CO2 lagret totalt',
   carbon_captured_next_year: 'CO2 lagret årlig',
 };

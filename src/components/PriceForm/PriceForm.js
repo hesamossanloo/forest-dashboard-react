@@ -44,6 +44,15 @@ const PriceForm = () => {
   const [formData, setFormData] = useState(userSpeciesPrices || {});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // New state variable to hold the user information from localstorage
+  const [persistedUser, setPersistedUser] = useState(currentUser);
+  useEffect(() => {
+    // Retrieve currentUser from local storage
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      setPersistedUser(JSON.parse(storedUser));
+    }
+  }, []);
   useEffect(() => {
     if (!authLoading) {
       setFormData(userSpeciesPrices);
@@ -52,9 +61,9 @@ const PriceForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (currentUser) {
+    if (persistedUser) {
       try {
-        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocRef = doc(db, 'users', persistedUser.uid);
         const formDataZeros = Object.entries(formData).reduce(
           (acc, [key, value]) => ({
             ...acc,
@@ -74,7 +83,7 @@ const PriceForm = () => {
 
   const resetForm = async (e) => {
     e.preventDefault();
-    if (currentUser && !isFetchingAirtableRecords) {
+    if (persistedUser && !isFetchingAirtableRecords) {
       try {
         setFormData(airTablePricesCosts);
         await updateUserSpeciesPrices(airTablePricesCosts);

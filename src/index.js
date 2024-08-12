@@ -2,7 +2,12 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'assets/css/nucleo-icons.css';
 import 'assets/demo/demo.css';
 import 'assets/scss/black-dashboard-react.scss';
-import FeedbackForm from 'components/FeedbackForm/FeedbackForm';
+import ForestCut from 'components/ForestCut/ForestCut';
+import ForestFeatureInfo from 'components/ForestFeatureInfo/ForestFeatureInfo';
+import ForestFinder from 'components/ForestFinder/ForestFinder';
+import ForestModel from 'components/ForestModel/ForestModel';
+import ForestSR16Intersection from 'components/ForestSR16Intersection/ForestSR16Intersection';
+import ForestVectorize from 'components/ForestVectorize/ForestVectorize';
 import ForgotPassword from 'components/ForgotPassword/ForgotPassword';
 import PrivacyPolicy from 'components/PrivacyPolicy/PrivacyPolicy';
 import PrivateRoute from 'components/PrivateRoute/PrivateRoute';
@@ -40,7 +45,15 @@ root.render(
             <Route path="/signup" element={<SignUp />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/test" element={<FeedbackForm />} />
+            <Route path="/find" element={<ForestFinder />} />
+            <Route path="/cut" element={<ForestCut />} />
+            <Route path="/vectorize" element={<ForestVectorize />} />
+            <Route path="/featureInfo" element={<ForestFeatureInfo />} />
+            <Route
+              path="/SR16Intersection"
+              element={<ForestSR16Intersection />}
+            />
+            <Route path="/model" element={<ForestModel />} />
             <Route path="*" element={<SignIn />} />
           </Routes>
         </BrowserRouter>

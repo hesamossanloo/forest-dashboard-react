@@ -6,10 +6,12 @@ import {
   fetchPricesRecords,
   fetchTooltipsRecords,
 } from '../services/airtable';
+import { useAuth } from './AuthContext';
 
 const AirtableContext = createContext();
 export const useAirtable = () => useContext(AirtableContext);
 const AirtableProvider = ({ children }) => {
+  const { currentUser } = useAuth();
   // Add 'children' to props validation
   AirtableProvider.propTypes = {
     children: PropTypes.node.isRequired,
@@ -23,7 +25,7 @@ const AirtableProvider = ({ children }) => {
   useEffect(() => {
     const getBestandRecords = async () => {
       try {
-        const records = await fetchBestandRecords();
+        const records = await fetchBestandRecords(currentUser.uid);
         setAirTableBestandInfos(records);
       } catch (error) {
         console.error('Error fetching Bestand records:', error);

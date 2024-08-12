@@ -19,17 +19,28 @@ export default function SignIn() {
   const passwordRef = useRef();
   const rememberMeRef = useRef();
 
-  const { signIn, signInWithGoogle, authError, clearError, currentUser } =
-    useAuth();
+  const {
+    signIn,
+    signInWithGoogle,
+    authError,
+    clearError,
+    currentUser,
+    authLoading,
+  } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentUser) {
-      navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
-    } else {
+    if (currentUser && !authError && !authLoading && currentUser.FBUser) {
+      if (currentUser.FBUser.forest && currentUser.FBUser.forest.teig) {
+        navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
+      } else {
+        navigate('/find'); // Navigate to the dashboard
+      }
+    }
+    if (!currentUser) {
       navigate('/signin'); // Navigate to the dashboard if the user is already signed in
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, authError, authLoading, navigate]);
 
   useEffect(() => {
     // Clear error on component mount or specific events
@@ -43,15 +54,32 @@ export default function SignIn() {
       passwordRef.current.value,
       rememberMeRef.current.checked
     );
-    if (response && response.wasSuccessful) {
-      navigate('/admin/map'); // Navigate to the dashboard
+    if (response && response.wasSuccessful && currentUser) {
+      if (
+        currentUser.FBUser &&
+        currentUser.FBUser.forest &&
+        currentUser.FBUser.forest.teig
+      ) {
+        navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
+      } else {
+        navigate('/find'); // Navigate to the dashboard
+      }
     }
   };
 
   const handleGoogleSignIn = async () => {
     const response = await signInWithGoogle(rememberMeRef.current.checked);
     if (response && response.wasSuccessful) {
-      navigate('/admin/map'); // Navigate to the dashboard
+      if (
+        currentUser &&
+        currentUser.FBUser &&
+        currentUser.FBUser.forest &&
+        currentUser.FBUser.forest.teig
+      ) {
+        navigate('/admin/map'); // Navigate to the dashboard if the user is already signed in
+      } else {
+        navigate('/find'); // Navigate to the dashboard
+      }
     }
   };
 
