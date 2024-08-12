@@ -19,14 +19,13 @@ const ForestModel = () => {
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    // Check if the file exists every 5 seconds
     const interval = setInterval(async () => {
       if (currentUser) {
         setSHPFileExists(true);
       } else {
         clearInterval(interval);
       }
-    }, 300000); // Check every 5 minutes
+    }, 180000); // Check every 3 minutes
 
     return () => clearInterval(interval);
   }, [currentUser]);

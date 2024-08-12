@@ -15,7 +15,6 @@ const ForestSR16Intersection = () => {
   const [SHPFileExists, setSHPFileExists] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
-  // get the current user uid
   const { currentUser } = useAuth();
 
   useEffect(() => {
@@ -27,7 +26,7 @@ const ForestSR16Intersection = () => {
       } else {
         clearInterval(interval);
       }
-    }, 300000); // Check every 5 minutes
+    }, 180000); // Check every 3 minutes
 
     return () => clearInterval(interval);
   }, [currentUser]);
@@ -84,7 +83,7 @@ const ForestSR16Intersection = () => {
         <>
           <div className="title">
             <h1>
-              Step 5/6 Finalizing your foresrt plan. Based on the size of your
+              Step 5/6 Finalizing your forestry plan. Based on the size of your
               forest, this could take up to 5 minutes.
             </h1>
           </div>

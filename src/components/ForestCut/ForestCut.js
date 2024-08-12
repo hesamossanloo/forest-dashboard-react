@@ -51,7 +51,7 @@ const ForestCut = () => {
       } else {
         clearInterval(interval);
       }
-    }, 5000); // Check every 5 seconds
+    }, 10000); // Check every 10 seconds
 
     // Check once if the file exists
     checkFile();
