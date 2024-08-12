@@ -152,7 +152,7 @@ const SignUp = () => {
         <Typography
           id="hesibear-message"
           variant="body2"
-          color="text.secondary"
+          color="error"
           align="center"
           sx={{ mt: 5 }}
         >
