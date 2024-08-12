@@ -160,6 +160,11 @@ function Map() {
                 color: mapFilter.HK4 ? '#bc8963' : 'blue',
                 weight: mapFilter.HK4 ? 6 : 1,
               });
+            } else {
+              lr.setStyle({
+                color: 'blue',
+                weight: 1,
+              });
             }
           });
         }
