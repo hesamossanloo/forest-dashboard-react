@@ -85,6 +85,11 @@ export default function SignIn() {
       } else {
         navigate('/find'); // Navigate to the dashboard
       }
+    } else {
+      // Handle the error
+      if (response.error === 'The specified key does not exist.') {
+        navigate('/find');
+      }
     }
   };
 
