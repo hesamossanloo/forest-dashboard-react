@@ -82,7 +82,7 @@ const AirtableProvider = ({ children }) => {
     };
 
     fetchData();
-  }, []);
+  }, [currentUser.uid]);
 
   return (
     <AirtableContext.Provider
