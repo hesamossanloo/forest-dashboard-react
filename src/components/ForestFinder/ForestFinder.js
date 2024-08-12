@@ -56,18 +56,10 @@ const ForestFinder = () => {
 
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    if (
-      currentUser &&
-      currentUser.FBUser &&
-      currentUser.FBUser.forests &&
-      !authErro
-    ) {
-      navigate('/admin/map');
-    }
     if (!currentUser) {
       navigate('/signin');
     }
-  }, [currentUser, navigate, authErro]);
+  }, [currentUser, navigate]);
 
   const addKommunenummer = () => {
     if (kommunenummer) {
@@ -153,7 +145,7 @@ const ForestFinder = () => {
     }
 
     setIsLoading(true);
-    if (!currentUser || !currentUser.FBUser) {
+    if (!currentUser) {
       setIsLoading(false);
       await logout();
       return;
@@ -161,7 +153,7 @@ const ForestFinder = () => {
     try {
       await updateFBUser({
         ...currentUser.FBUser,
-        forest: { ...currentUser.FBUser.forest, teig: JSON.stringify(geoJson) },
+        forest: { teig: JSON.stringify(geoJson) },
       });
       setIsLoading(false);
       setRequestSent(true); // Mark the request as sent

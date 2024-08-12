@@ -93,7 +93,7 @@ function Map() {
     }
   }, [mapFilter]);
 
-  // if currentUser is logged in, chekc if it has forests. get the forests[0]
+  // if currentUser is logged in, chekc if it has forest. get the forest
   // which is a geojson and find the bounds of it
   useEffect(() => {
     if (persistedUser && persistedUser.FBUser && persistedUser.FBUser.forest) {
