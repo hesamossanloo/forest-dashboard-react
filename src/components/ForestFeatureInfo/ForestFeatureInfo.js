@@ -14,7 +14,6 @@ import { Button, Modal, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 
 import { doc, getDoc } from 'firebase/firestore';
-import pako from 'pako';
 import { useRef } from 'react';
 import { db } from 'services/firebase';
 import shp from 'shpjs';
@@ -28,7 +27,7 @@ const ForestFeatureInfo = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const hasDownloaded = useRef(false); // Use a ref to track if the file has been downloaded
   const [isLoading, setIsLoading] = useState(false);
-  const { currentUser, updateFBUser } = useAuth();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const checkFile = async () => {
@@ -46,7 +45,7 @@ const ForestFeatureInfo = () => {
       } else {
         clearInterval(interval);
       }
-    }, 120000); // Check every 2 minutes
+    }, 300000); // Check every 2 minutes
 
     // Check once if the file exists
     checkFile();
@@ -80,44 +79,6 @@ const ForestFeatureInfo = () => {
             dbf: dbfFile.Body,
           });
           setAllPolygonsGeoJson(geoJsonWithInfos);
-
-          // Compress the GeoJSON data
-          const geoJsonString = JSON.stringify(geoJsonWithInfos);
-          const compressedGeoJson = pako.gzip(geoJsonString);
-          // Convert compressed data to base64 string in chunks
-          const uint8Array = new Uint8Array(compressedGeoJson);
-          let base64CompressedGeoJson = '';
-          for (let i = 0; i < uint8Array.length; i += 3) {
-            base64CompressedGeoJson += btoa(
-              String.fromCharCode(
-                uint8Array[i],
-                uint8Array[i + 1],
-                uint8Array[i + 2]
-              )
-            );
-          }
-
-          // Handle the remaining bytes
-          if (uint8Array.length % 3 === 1) {
-            base64CompressedGeoJson += btoa(
-              String.fromCharCode(uint8Array[uint8Array.length - 1])
-            );
-          } else if (uint8Array.length % 3 === 2) {
-            base64CompressedGeoJson += btoa(
-              String.fromCharCode(
-                uint8Array[uint8Array.length - 2],
-                uint8Array[uint8Array.length - 1]
-              )
-            );
-          }
-
-          await updateFBUser({
-            ...currentUser.FBUser,
-            forest: {
-              ...currentUser.FBUser.forest,
-              vector: base64CompressedGeoJson,
-            },
-          });
         }
       };
       if (SHPFileExists && !hasDownloaded.current) {
