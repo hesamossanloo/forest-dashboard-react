@@ -16,7 +16,12 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { fetchAirtablePrices } from 'services/airtable';
 import { downloadS3File } from 'services/AWS';
 import { auth, db } from 'services/firebase';
-import { S3_CUT_FOLDER_NAME, S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
+import shp from 'shpjs';
+import {
+  S3_CUT_FOLDER_NAME,
+  S3_FEATURE_INFO_FOLDER_NAME,
+  S3_OUTPUTS_BUCKET_NAME,
+} from 'variables/AWS';
 import { initialPrices } from 'variables/forest';
 
 const AuthContext = createContext();
@@ -41,19 +46,44 @@ export const AuthProvider = ({ children }) => {
           // Fetch prices after successful login
           const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);
+          // Get FBUserData from ocalstorage
+          const FBU = JSON.parse(localStorage.getItem('currentUser'));
           if (userDoc.exists()) {
             const FBUserData = userDoc.data();
             // Download Forest PNG image
             const forestID = user.uid;
-            const data = await downloadS3File(
+            const PNGData = await downloadS3File(
               S3_OUTPUTS_BUCKET_NAME,
               `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
             );
-            if (data && data.Body) {
+            if (PNGData && PNGData.Body) {
               // Convert the downloaded data to a base64 URL
-              const base64Data = Buffer.from(data.Body).toString('base64');
+              const base64Data = Buffer.from(PNGData.Body).toString('base64');
               const PNGURL = `data:image/png;base64,${base64Data}`;
               FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
+            }
+            const shpFile = await downloadS3File(
+              S3_OUTPUTS_BUCKET_NAME,
+              `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+            );
+            const shxFile = await downloadS3File(
+              S3_OUTPUTS_BUCKET_NAME,
+              `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
+            );
+            const dbfFile = await downloadS3File(
+              S3_OUTPUTS_BUCKET_NAME,
+              `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
+            );
+            if (shpFile && shxFile && dbfFile) {
+              // Convert SHP files to GeoJSON
+              const geoJsonWithInfos = await shp({
+                shp: shpFile.Body,
+                shx: shxFile.Body,
+                dbf: dbfFile.Body,
+              });
+              if (FBUserData.forest) {
+                FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+              }
             }
             if (FBUserData.prices) {
               setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
