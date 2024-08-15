@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }) => {
           const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);
           // Get FBUserData from ocalstorage
-          const FBU = JSON.parse(localStorage.getItem('currentUser'));
           if (userDoc.exists()) {
             const FBUserData = userDoc.data();
             // Download Forest PNG image
