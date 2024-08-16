@@ -17,6 +17,14 @@ const ForestSR16Intersection = () => {
   const [requestSent, setRequestSent] = useState(false);
   const { currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  // if user is not logged in redirect to sigin page
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/signin');
+    }
+  }, [currentUser, navigate]);
+
   useEffect(() => {
     // Check if the file exists every 5 seconds
     const interval = setInterval(async () => {

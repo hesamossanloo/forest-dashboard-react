@@ -29,6 +29,13 @@ const ForestFeatureInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { currentUser } = useAuth();
 
+  // if user is not logged in redirect to sigin page
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/signin');
+    }
+  }, [currentUser, navigate]);
+
   useEffect(() => {
     const checkFile = async () => {
       const forestID = currentUser.uid;
