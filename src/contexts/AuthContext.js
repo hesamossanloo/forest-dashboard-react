@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       if (user) {
         try {
+          setAuthLoading(true);
           // Fetch prices after successful login
           const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);

@@ -591,7 +591,7 @@ export const generateHKPopupContent = (
       </tr>` +
       // Add Bonitet
       `<tr style="border: 1px solid black;">
-        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bonitet_beskrivelse']}</td>
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bonitet_bes']}</td>
         <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.bonitet}</td>
         <td style="padding: 5px; border: 1px solid black; text-align: center;">
           <span style="padding: 5px; background-color: transparent; text-align: center;">
@@ -603,7 +603,7 @@ export const generateHKPopupContent = (
       </tr>` +
       // Add the Treslag
       `<tr style="border: 1px solid black; background-color: ${rowBGColor}">
-        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bontre_beskrivelse']}</td>
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['bontre_be']}</td>
         <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.treslag}</td>
         <td style="padding: 5px; border: 1px solid black; text-align: center;">
           <span style="padding: 5px; background-color: transparent; text-align: center;">
@@ -615,7 +615,7 @@ export const generateHKPopupContent = (
       </tr>` +
       // Add the ArealM2
       `<tr style="border: 1px solid black;">
-          <td style="padding: 5px; border: 1px solid black; min-width: 110px">${desiredFeatInfoAttrHKLayer['arealDAA']}</td>
+          <td style="padding: 5px; border: 1px solid black; min-width: 110px">${desiredFeatInfoAttrHKLayer['areal']}</td>
           <td style="padding: 5px; display: flex; justify-content: space-between; min-width: 110px">
             <span style="font-weight: bold">${sumObj.arealDAA}</span>
             <span>daa</span>

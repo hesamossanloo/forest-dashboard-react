@@ -62,7 +62,9 @@ const ForestCut = () => {
     }, 10000); // Check every 10 seconds
 
     // Check once if the file exists
-    checkFile();
+    if (currentUser) {
+      checkFile();
+    }
 
     return () => clearInterval(interval);
   }, [PNGFileExists, currentUser]);
@@ -96,7 +98,7 @@ const ForestCut = () => {
         setForestHKPNG(imageUrl);
       }
     };
-    if (PNGFileExists) {
+    if (!PNGFileExists) {
       downloadFile();
     }
   }, [PNGFileExists, currentUser]);
