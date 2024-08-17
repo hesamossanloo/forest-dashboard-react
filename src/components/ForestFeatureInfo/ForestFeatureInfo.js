@@ -52,12 +52,7 @@ const ForestFeatureInfo = () => {
       } else {
         clearInterval(interval);
       }
-    }, 300000); // Check every 2 minutes
-
-    // Check once if the file exists
-    if (currentUser) {
-      checkFile();
-    }
+    }, 300000);
 
     return () => clearInterval(interval);
   }, [SHPFileExists, currentUser]);
@@ -152,7 +147,6 @@ const ForestFeatureInfo = () => {
             ),
           ]);
         };
-        // Wait for 5 minutes (300,000 milliseconds) before running the fetch request
         setTimeout(async () => {
           try {
             await fetchWithTimeout(
@@ -172,7 +166,7 @@ const ForestFeatureInfo = () => {
             setIsLoading(false);
             console.error('Error:', error);
           }
-        }, 300000); // 300,000 milliseconds = 5 minutes
+        }, 30000);
       } catch (error) {
         setRequestSent(false); // Reset the state if there's an error
         setIsLoading(false);
@@ -197,11 +191,9 @@ const ForestFeatureInfo = () => {
       ) : (
         <>
           <div className="title">
-            <h1>
-              Step 4/6 Bestands Info Gathering: Please wait while we are
-              preparing the Skogbruksplan for your forest. Based on the size of
-              your forest, this could take up to 5 minutes.
-            </h1>
+            Step 4/6 Bestands Info Gathering: Please wait while we are preparing
+            the Skogbruksplan for your forest. Based on the size of your forest,
+            this could take up to 5 minutes.
           </div>
           <ForestScene />
         </>
@@ -233,8 +225,10 @@ const ForestFeatureInfo = () => {
         </Modal>
       )}
       {isLoading && (
-        <div className="spinner-container">
-          <div className="spinner"></div>
+        <div className="parent-spinner-container">
+          <div className="spinner-container">
+            <div className="spinner"></div>
+          </div>
         </div>
       )}
     </>

@@ -100,6 +100,7 @@ export const AuthProvider = ({ children }) => {
               return updatedUser;
             });
           }
+          setAuthLoading(false);
         } catch (error) {
           if (error.message !== 'The specified key does not exist.') {
             console.error('Error fetching prices:', error);
@@ -109,7 +110,6 @@ export const AuthProvider = ({ children }) => {
         setAuthLoading(false);
       }
     });
-    setAuthLoading(false);
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -268,8 +268,8 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));
           return updatedUser;
         });
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing in:', error);
@@ -320,6 +320,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));
           return updatedUser;
         });
+        setAuthLoading(false);
       } else {
         // Download Forest PNG image
         const forestID = user.uid;
@@ -361,8 +362,8 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('currentUser', JSON.stringify(updatedUser));
           return updatedUser;
         });
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
       return { wasSuccessful: true };
     } catch (error) {
       console.error('Error signing in with Google:', error);
@@ -407,8 +408,10 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {authLoading ? (
-        <div className="spinner-container">
-          <div className="spinner"></div>
+        <div className="parent-spinner-container">
+          <div className="spinner-container">
+            <div className="spinner"></div>
+          </div>
         </div>
       ) : (
         children // Display children when not loading
