@@ -33,7 +33,7 @@ const ForestModel = () => {
       } else {
         clearInterval(interval);
       }
-    }, 240000); // Check every 3 minutes
+    }, 240000); // Check every 4 minutes
 
     return () => clearInterval(interval);
   }, [currentUser]);

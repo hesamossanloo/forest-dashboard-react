@@ -51,7 +51,9 @@ const ForestVectorize = () => {
     }, 120000); // Check every 2 minutes
 
     // Check once if the file exists
-    checkFile();
+    if (currentUser) {
+      checkFile();
+    }
 
     return () => clearInterval(interval);
   }, [VectorFileExists, currentUser]);

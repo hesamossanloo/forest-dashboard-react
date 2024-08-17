@@ -55,7 +55,9 @@ const ForestFeatureInfo = () => {
     }, 300000); // Check every 2 minutes
 
     // Check once if the file exists
-    checkFile();
+    if (currentUser) {
+      checkFile();
+    }
 
     return () => clearInterval(interval);
   }, [SHPFileExists, currentUser]);
@@ -150,18 +152,27 @@ const ForestFeatureInfo = () => {
             ),
           ]);
         };
-        await fetchWithTimeout(
-          'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/SR16IntersectionToAirtable',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: requestPayload,
+        // Wait for 5 minutes (300,000 milliseconds) before running the fetch request
+        setTimeout(async () => {
+          try {
+            await fetchWithTimeout(
+              'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/SR16IntersectionToAirtable',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: requestPayload,
+              }
+            );
+            setIsLoading(false);
+            navigate('/SR16Intersection');
+          } catch (error) {
+            setRequestSent(false); // Reset the state if there's an error
+            setIsLoading(false);
+            console.error('Error:', error);
           }
-        );
-        setIsLoading(false);
-        navigate('/SR16Intersection');
+        }, 300000); // 300,000 milliseconds = 5 minutes
       } catch (error) {
         setRequestSent(false); // Reset the state if there's an error
         setIsLoading(false);
