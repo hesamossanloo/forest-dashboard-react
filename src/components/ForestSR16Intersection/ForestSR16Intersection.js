@@ -34,7 +34,7 @@ const ForestSR16Intersection = () => {
       } else {
         clearInterval(interval);
       }
-    }, 180000); // Check every 3 minutes
+    }, 240000); // Check every 3 minutes
 
     return () => clearInterval(interval);
   }, [currentUser]);
@@ -68,18 +68,28 @@ const ForestSR16Intersection = () => {
             ),
           ]);
         };
-        await fetchWithTimeout(
-          'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/model',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: requestPayload,
+        // Wait for 3 minutes (180,000 milliseconds) before running the fetch request
+        // to make sure the previous lambda has upserted all the records onto Airtable
+        setTimeout(async () => {
+          try {
+            await fetchWithTimeout(
+              'https://sktkye0v17.execute-api.eu-north-1.amazonaws.com/Prod/model',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: requestPayload,
+              }
+            );
+            setIsLoading(false);
+            navigate('/model');
+          } catch (error) {
+            setRequestSent(false); // Reset the state if there's an error
+            setIsLoading(false);
+            console.error('Error:', error);
           }
-        );
-        setIsLoading(false);
-        navigate('/model');
+        }, 60000); // Wait for 3 minutes
       } catch (error) {
         setRequestSent(false); // Reset the state if there's an error
         setIsLoading(false);
