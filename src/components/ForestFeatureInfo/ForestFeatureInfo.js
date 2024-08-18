@@ -44,6 +44,9 @@ const ForestFeatureInfo = () => {
         `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
       );
       setSHPFileExists(VectorWInfoExists);
+      if (!VectorWInfoExists) {
+        return;
+      }
     };
 
     const interval = setInterval(() => {
@@ -52,7 +55,7 @@ const ForestFeatureInfo = () => {
       } else {
         clearInterval(interval);
       }
-    }, 300000);
+    }, 180000);
 
     return () => clearInterval(interval);
   }, [SHPFileExists, currentUser]);
@@ -166,7 +169,7 @@ const ForestFeatureInfo = () => {
             setIsLoading(false);
             console.error('Error:', error);
           }
-        }, 30000);
+        }, 3000);
       } catch (error) {
         setRequestSent(false); // Reset the state if there's an error
         setIsLoading(false);
@@ -193,7 +196,7 @@ const ForestFeatureInfo = () => {
           <div className="title">
             Step 4/6 Bestands Info Gathering: Please wait while we are preparing
             the Skogbruksplan for your forest. Based on the size of your forest,
-            this could take up to 5 minutes.
+            this could take up to 4 minutes.
           </div>
           <ForestScene />
         </>
@@ -225,7 +228,7 @@ const ForestFeatureInfo = () => {
         </Modal>
       )}
       {isLoading && (
-        <div className="parent-spinner-container">
+        <div className="overlay-spinner">
           <div className="spinner-container">
             <div className="spinner"></div>
           </div>

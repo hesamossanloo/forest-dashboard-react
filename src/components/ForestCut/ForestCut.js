@@ -46,6 +46,10 @@ const ForestCut = () => {
         `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
       );
       setPNGFileExists(PNGExists);
+      if (!PNGExists) {
+        return;
+      }
+
       const VectorExists = await checkFileExists(
         S3_OUTPUTS_BUCKET_NAME,
         `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`
@@ -62,7 +66,7 @@ const ForestCut = () => {
     }, 10000); // Check every 10 seconds
 
     // Check once if the file exists
-    if (currentUser) {
+    if (currentUser && !PNGFileExists) {
       checkFile();
     }
 
@@ -98,7 +102,7 @@ const ForestCut = () => {
         setForestHKPNG(imageUrl);
       }
     };
-    if (!PNGFileExists) {
+    if (PNGFileExists) {
       downloadFile();
     }
   }, [PNGFileExists, currentUser]);
@@ -241,8 +245,10 @@ const ForestCut = () => {
         </Modal>
       )}
       {isLoading && (
-        <div className="spinner-container">
-          <div className="spinner"></div>
+        <div className="overlay-spinner">
+          <div className="spinner-container">
+            <div className="spinner"></div>
+          </div>
         </div>
       )}
     </>

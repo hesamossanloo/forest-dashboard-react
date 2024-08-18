@@ -34,7 +34,7 @@ const ForestSR16Intersection = () => {
       } else {
         clearInterval(interval);
       }
-    }, 240000); // Check every 3 minutes
+    }, 180000); // Check every 3 minutes
 
     return () => clearInterval(interval);
   }, [currentUser]);
@@ -89,7 +89,7 @@ const ForestSR16Intersection = () => {
             setIsLoading(false);
             console.error('Error:', error);
           }
-        }, 60000); // Wait for 3 minutes
+        }, 5000);
       } catch (error) {
         setRequestSent(false); // Reset the state if there's an error
         setIsLoading(false);
@@ -110,7 +110,7 @@ const ForestSR16Intersection = () => {
           <div className="title">
             <h1>
               Step 5/6 Finalizing your forestry plan. Based on the size of your
-              forest, this could take up to 5 minutes.
+              forest, this could take up to 4 minutes.
             </h1>
           </div>
           <ForestScene />

@@ -27,6 +27,22 @@ import { initialPrices } from 'variables/forest';
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
+const downloadS3SHPFile = async (forestID) => {
+  const shpFile = await downloadS3File(
+    S3_OUTPUTS_BUCKET_NAME,
+    `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+  );
+  const shxFile = await downloadS3File(
+    S3_OUTPUTS_BUCKET_NAME,
+    `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
+  );
+  const dbfFile = await downloadS3File(
+    S3_OUTPUTS_BUCKET_NAME,
+    `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
+  );
+  return { shpFile, shxFile, dbfFile };
+};
+
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
     // Retrieve the currentUser from local storage if it exists
@@ -62,28 +78,22 @@ export const AuthProvider = ({ children }) => {
               const PNGURL = `data:image/png;base64,${base64Data}`;
               FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
             }
-            const shpFile = await downloadS3File(
-              S3_OUTPUTS_BUCKET_NAME,
-              `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
-            );
-            const shxFile = await downloadS3File(
-              S3_OUTPUTS_BUCKET_NAME,
-              `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
-            );
-            const dbfFile = await downloadS3File(
-              S3_OUTPUTS_BUCKET_NAME,
-              `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
-            );
-            if (shpFile && shxFile && dbfFile) {
-              // Convert SHP files to GeoJSON
-              const geoJsonWithInfos = await shp({
-                shp: shpFile.Body,
-                shx: shxFile.Body,
-                dbf: dbfFile.Body,
-              });
-              if (FBUserData.forest) {
-                FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+            try {
+              const { shpFile, shxFile, dbfFile } =
+                await downloadS3SHPFile(forestID);
+              if (shpFile && shxFile && dbfFile) {
+                // Convert SHP files to GeoJSON
+                const geoJsonWithInfos = await shp({
+                  shp: shpFile.Body,
+                  shx: shxFile.Body,
+                  dbf: dbfFile.Body,
+                });
+                if (FBUserData.forest) {
+                  FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+                }
               }
+            } catch (error) {
+              console.error('Error downloading SHP files:', error);
             }
             if (FBUserData.prices) {
               setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
@@ -113,15 +123,6 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    // Save the currentUser to local storage whenever it changes
-    if (currentUser) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('currentUser');
-    }
-  }, [currentUser]);
 
   // Provide authError and a method to clear it to the context consumers
   const clearError = () => setAuthError(null);
@@ -254,14 +255,34 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
+        try {
+          const { shpFile, shxFile, dbfFile } =
+            await downloadS3SHPFile(forestID);
+          if (shpFile && shxFile && dbfFile) {
+            // Convert SHP files to GeoJSON
+            const geoJsonWithInfos = await shp({
+              shp: shpFile.Body,
+              shx: shxFile.Body,
+              dbf: dbfFile.Body,
+            });
+            if (FBUserData.forest) {
+              FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+            }
+          }
+        } catch (error) {
+          console.error('Error downloading SHP files:', error);
+        }
         setCurrentUser((prevUser) => {
           const updatedUser = {
             ...prevUser,
             ...user,
             FBUser: {
               ...prevUser?.FBUser,
-              ...FBUserData,
-              forest: { ...prevUser?.FBUser?.forest, PNG: PNGURL },
+              forest: {
+                ...prevUser?.FBUser?.forest,
+                PNG: PNGURL,
+                vector: FBUserData.forest.vector,
+              },
               prices: updatedPrices,
             },
           };
@@ -348,14 +369,34 @@ export const AuthProvider = ({ children }) => {
         // Update Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
+        try {
+          const { shpFile, shxFile, dbfFile } =
+            await downloadS3SHPFile(forestID);
+          if (shpFile && shxFile && dbfFile) {
+            // Convert SHP files to GeoJSON
+            const geoJsonWithInfos = await shp({
+              shp: shpFile.Body,
+              shx: shxFile.Body,
+              dbf: dbfFile.Body,
+            });
+            if (FBUserData.forest) {
+              FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+            }
+          }
+        } catch (error) {
+          console.error('Error downloading SHP files:', error);
+        }
         setCurrentUser((prevUser) => {
           const updatedUser = {
             ...prevUser,
             ...user,
             FBUser: {
               ...prevUser.FBUser,
-              ...FBUserData,
-              forest: { ...prevUser.FBUser.forest, PNG: PNGURL },
+              forest: {
+                ...prevUser.FBUser.forest,
+                PNG: PNGURL,
+                vector: FBUserData.forest.vector,
+              },
               prices: updatedPrices,
             },
           };
@@ -408,7 +449,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {authLoading ? (
-        <div className="parent-spinner-container">
+        <div className="overlay-spinner">
           <div className="spinner-container">
             <div className="spinner"></div>
           </div>
