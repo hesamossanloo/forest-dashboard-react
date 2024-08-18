@@ -14,7 +14,13 @@ import {
   ZoomControl,
 } from 'react-leaflet';
 import { Button } from 'reactstrap';
+import { downloadS3File } from 'services/AWS';
+import shp from 'shpjs';
 import CustomMapEvents from 'utilities/Map/CustomMapEvents';
+import {
+  S3_FEATURE_INFO_FOLDER_NAME,
+  S3_OUTPUTS_BUCKET_NAME,
+} from 'variables/AWS.js';
 import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
@@ -27,7 +33,21 @@ L.Icon.Default.mergeOptions({
   iconUrl: require('leaflet/dist/images/marker-icon.png'),
   shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
-
+const downloadS3SHPFile = async (forestID) => {
+  const shpFile = await downloadS3File(
+    S3_OUTPUTS_BUCKET_NAME,
+    `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+  );
+  const shxFile = await downloadS3File(
+    S3_OUTPUTS_BUCKET_NAME,
+    `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
+  );
+  const dbfFile = await downloadS3File(
+    S3_OUTPUTS_BUCKET_NAME,
+    `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
+  );
+  return { shpFile, shxFile, dbfFile };
+};
 /* eslint-disable react/react-in-jsx-scope */
 function Map() {
   const [activeOverlay, setActiveOverlay] = useState({
@@ -58,9 +78,35 @@ function Map() {
     // Retrieve currentUser from local storage
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      setPersistedUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      if (parsedUser?.FBUser?.forest?.vector) {
+        setPersistedUser(parsedUser);
+      } else {
+        try {
+          const downloadS3SHPFiles = async () => {
+            const { shpFile, shxFile, dbfFile } = await downloadS3SHPFile(
+              currentUser.uid
+            );
+            if (shpFile && shxFile && dbfFile) {
+              // Convert SHP files to GeoJSON
+              const geoJsonWithInfos = await shp({
+                shp: shpFile.Body,
+                shx: shxFile.Body,
+                dbf: dbfFile.Body,
+              });
+              if (parsedUser.forest) {
+                parsedUser.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+              }
+            }
+          };
+          downloadS3SHPFiles();
+          setPersistedUser(parsedUser);
+        } catch (error) {
+          console.error('Error downloading SHP files:', error);
+        }
+      }
     }
-  }, []);
+  }, [currentUser.uid]);
 
   useEffect(() => {
     // set the forest PNG

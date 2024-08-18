@@ -40,6 +40,9 @@ const ForestVectorize = () => {
         `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`
       );
       setVectorFileExists(VectorExists);
+      if (!VectorExists) {
+        return;
+      }
     };
 
     const interval = setInterval(() => {
@@ -51,7 +54,7 @@ const ForestVectorize = () => {
     }, 120000); // Check every 2 minutes
 
     // Check once if the file exists
-    if (currentUser) {
+    if (currentUser && !VectorFileExists) {
       checkFile();
     }
 
@@ -133,7 +136,7 @@ const ForestVectorize = () => {
             <h1>
               Step 3/6 Polygons Creation: Please wait while we are preparing the
               Skogbruksplan for your forest. Based on the size of your forest,
-              this could take up to 10 minutes.
+              this step could take up to 4 minutes.
             </h1>
           </div>
           <ForestScene />
