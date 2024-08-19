@@ -433,6 +433,13 @@ export const generateHKPopupContent = (
     </tr>`;
     content += '<tr>';
     Object.values(desiredFeatInfoAttrHKLayerWithUnits).forEach((attr) => {
+      if (attr === 'Areal') {
+        content += `<th style="padding: 5px; border: 1px solid black;">${attr} (daa)</th>`;
+        return;
+      }
+      if (attr === 'Areal (daa)') {
+        return;
+      }
       content += `<th style="padding: 5px; border: 1px solid black;">${attr}</th>`;
     });
     content += `

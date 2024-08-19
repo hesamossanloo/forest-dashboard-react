@@ -143,8 +143,10 @@ const ForestSR16Intersection = () => {
         </Modal>
       )}
       {isLoading && (
-        <div className="spinner-container">
-          <div className="spinner"></div>
+        <div className="overlay-spinner">
+          <div className="spinner-container">
+            <div className="spinner"></div>
+          </div>
         </div>
       )}
     </>
