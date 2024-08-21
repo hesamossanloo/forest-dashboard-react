@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import ToggleSwitch from 'components/ToggleSwitch/ToggleSwitch.js';
 import { useAuth } from 'contexts/AuthContext.js';
 import { MapFilterContext } from 'contexts/MapFilterContext.js';
@@ -27,6 +28,7 @@ import {
 import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
+
 const { BaseLayer, Overlay } = LayersControl;
 delete L.Icon.Default.prototype._getIconUrl;
 
