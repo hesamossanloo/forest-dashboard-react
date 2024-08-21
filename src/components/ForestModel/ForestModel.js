@@ -58,7 +58,7 @@ const ForestModel = () => {
           <div className="title">
             <h1>
               Step 6/6 Finalizing your forestry plan. Based on the size of your
-              forest, this could take up to 5 minutes.
+              forest, this could take up to 8 minutes.
             </h1>
           </div>
           <ForestScene />

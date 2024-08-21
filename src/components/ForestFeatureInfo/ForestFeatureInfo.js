@@ -196,7 +196,7 @@ const ForestFeatureInfo = () => {
           <div className="title">
             Step 4/6 Bestands Info Gathering: Please wait while we are preparing
             the Skogbruksplan for your forest. Based on the size of your forest,
-            this could take up to 4 minutes.
+            this could take up to 6 minutes.
           </div>
           <ForestScene />
         </>

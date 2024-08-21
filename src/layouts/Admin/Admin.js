@@ -87,7 +87,7 @@ function Admin(props) {
             <Sidebar
               routes={routes}
               logo={{
-                outterLink: '',
+                innerLink: '/admin/map',
                 text: 'SKOGAPP',
                 imgSrc: logo,
               }}

@@ -13,18 +13,20 @@ import {
   WMSTileLayer,
   ZoomControl,
 } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'reactstrap';
+import { fetchAirtablePrices } from 'services/airtable.js';
 import { downloadS3File } from 'services/AWS';
 import shp from 'shpjs';
 import CustomMapEvents from 'utilities/Map/CustomMapEvents';
 import {
+  S3_CUT_FOLDER_NAME,
   S3_FEATURE_INFO_FOLDER_NAME,
   S3_OUTPUTS_BUCKET_NAME,
 } from 'variables/AWS.js';
 import { MAP_DEFAULT_ZOOM_LEVEL } from 'variables/forest.js';
 import '../utilities/Map/PopupMovable.js';
 import '../utilities/Map/SmoothWheelZoom.js';
-
 const { BaseLayer, Overlay } = LayersControl;
 delete L.Icon.Default.prototype._getIconUrl;
 
@@ -66,54 +68,92 @@ function Map() {
   const multiPolygonSwitchIsONRef = useRef(multiPolygonSwitchIsON);
   const previousGeoJSONLayersRef = useRef([]);
   const userPolygonsRef = useRef(null);
-  const { currentUser } = useAuth();
+  const { currentUser, updateUserSpeciesPrices } = useAuth();
   const [forestBounds, setForestBounds] = useState(null);
   const [forestPNG, setForestPNG] = useState(null);
   const [userForestTeig, setUserForestTeig] = useState(null);
+  const navigate = useNavigate();
 
   // New state variable to hold the user information from localstorage
   const [persistedUser, setPersistedUser] = useState(currentUser);
 
+  // Get the stored currentUser from the localstorage
   useEffect(() => {
     // Retrieve currentUser from local storage
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      if (parsedUser?.FBUser?.forest?.vector) {
-        setPersistedUser(parsedUser);
-      } else {
-        try {
-          const downloadS3SHPFiles = async () => {
-            const { shpFile, shxFile, dbfFile } = await downloadS3SHPFile(
-              currentUser.uid
-            );
-            if (shpFile && shxFile && dbfFile) {
-              // Convert SHP files to GeoJSON
-              const geoJsonWithInfos = await shp({
-                shp: shpFile.Body,
-                shx: shxFile.Body,
-                dbf: dbfFile.Body,
-              });
-              if (parsedUser.forest) {
-                parsedUser.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
-              }
-            }
-          };
-          downloadS3SHPFiles();
-          setPersistedUser(parsedUser);
-        } catch (error) {
-          console.error('Error downloading SHP files:', error);
+      setPersistedUser(parsedUser);
+    } else {
+      navigate('/signin');
+    }
+  }, [currentUser.uid, navigate]);
+
+  // Check if the stored currentUser has all the necessary properties
+  useEffect(() => {
+    // Handle the forest PNG
+    if (!persistedUser?.FBUser?.forest?.PNG) {
+      // Download Forest PNG image
+      const downloadPNG = async () => {
+        const forestID = persistedUser.uid;
+        const PNGData = await downloadS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+        );
+        if (PNGData && PNGData.Body) {
+          // Convert the downloaded data to a base64 URL
+          const base64Data = Buffer.from(PNGData.Body).toString('base64');
+          const PNGURL = `data:image/png;base64,${base64Data}`;
+          persistedUser.FBUser.forest.PNG = PNGURL; // Add the PNG URL to the user data
         }
+      };
+      downloadPNG();
+    }
+    setForestPNG(persistedUser.FBUser.forest.PNG);
+    // Handle the forest SHP file
+    if (!persistedUser?.FBUser?.forest?.vector) {
+      // Download Forest SHP file
+      const downloadSHP = async () => {
+        const forestID = persistedUser.uid;
+        const { shpFile, shxFile, dbfFile } = await downloadS3SHPFile(forestID);
+        if (shpFile && shxFile && dbfFile) {
+          const geoJSONWithInfo = await shp({
+            shp: shpFile.Body,
+            shx: shxFile.Body,
+            dbf: dbfFile.Body,
+          });
+          persistedUser.FBUser.forest.vector = geoJSONWithInfo; // Add the GeoJSON to the user data
+        }
+      };
+      downloadSHP();
+    }
+    // Handle prices
+    if (!persistedUser?.FBUser?.prices) {
+      const fetchPrices = async () => {
+        const airtablePrices = await fetchAirtablePrices();
+        updateUserSpeciesPrices(airtablePrices);
+        persistedUser.FBUser.prices = airtablePrices;
+      };
+      fetchPrices();
+    }
+    // Handle Teig
+    if (persistedUser?.FBUser?.forest?.teig) {
+      const forest = persistedUser.FBUser.forest.teig;
+      if (forest) {
+        const bounds = L.geoJSON(JSON.parse(forest)).getBounds();
+        setForestBounds(bounds);
+        setUserForestTeig(JSON.parse(forest));
       }
     }
-  }, [currentUser.uid]);
-
-  useEffect(() => {
-    // set the forest PNG
-    if (persistedUser && persistedUser.FBUser && persistedUser.FBUser.forest) {
-      setForestPNG(persistedUser.FBUser.forest.PNG);
-    }
-  }, [persistedUser]);
+    localStorage.setItem('currentUser', JSON.stringify(persistedUser));
+  }, [
+    persistedUser.FBUser.forest,
+    persistedUser.FBUser.prices,
+    persistedUser.FBUser,
+    persistedUser.uid,
+    persistedUser,
+    updateUserSpeciesPrices,
+  ]);
 
   // Handles the Map Filter states and the border colors
   useEffect(() => {
@@ -138,19 +178,6 @@ function Map() {
       });
     }
   }, [mapFilter]);
-
-  // if currentUser is logged in, chekc if it has forest. get the forest
-  // which is a geojson and find the bounds of it
-  useEffect(() => {
-    if (persistedUser && persistedUser.FBUser && persistedUser.FBUser.forest) {
-      const forest = persistedUser.FBUser.forest.teig;
-      if (forest) {
-        const bounds = L.geoJSON(JSON.parse(forest)).getBounds();
-        setForestBounds(bounds);
-        setUserForestTeig(JSON.parse(forest));
-      }
-    }
-  }, [persistedUser, setUserForestTeig]);
 
   useEffect(() => {
     selectedVectorFeatureRef.current = selectedVectorFeature;
