@@ -97,6 +97,11 @@ export const AuthProvider = ({ children }) => {
             }
             if (FBUserData.prices) {
               setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
+            } else {
+              const airtablePrices = await fetchAirtablePrices();
+              airtablePrices
+                ? setUserSpeciesPrices(airtablePrices)
+                : setUserSpeciesPrices(initialPrices);
             }
             setCurrentUser((prevUser) => {
               const updatedUser = {
@@ -207,6 +212,7 @@ export const AuthProvider = ({ children }) => {
       await setPersistence(auth, persistence);
       await signInWithEmailAndPassword(auth, email, password);
 
+      // Fetch initial prices from Airtable
       const airtablePrices = await fetchAirtablePrices();
 
       const user = auth.currentUser;
@@ -214,28 +220,15 @@ export const AuthProvider = ({ children }) => {
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        // If the user document doesn't exist, create it with Airtable prices
-        await setDoc(userDocRef, { prices: airtablePrices }, { merge: true });
-        setUserSpeciesPrices(airtablePrices);
-        setCurrentUser((prevUser) => {
-          const updatedUser = {
-            ...prevUser,
-            FBUser: {
-              ...prevUser?.FBUser,
-              email,
-              prices: airtablePrices,
-            },
-          };
-          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-          return updatedUser;
-        });
+        setAuthError('No user found. Please sign up first.');
       } else {
         // Download Forest PNG image
         const forestID = user.uid;
-        const data = await downloadS3File(
+        const PNGData = await downloadS3File(
           S3_OUTPUTS_BUCKET_NAME,
           `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
         );
+        // Check if the user has already set the prices in Firestore!
         const FBUserData = userDoc.data();
         let updatedPrices = FBUserData.prices || {};
 
@@ -246,16 +239,18 @@ export const AuthProvider = ({ children }) => {
           }
         }
 
-        if (data && data.Body) {
+        // Handle the PNG image
+        if (PNGData && PNGData.Body) {
           // Convert the downloaded data to a base64 URL
-          const base64Data = Buffer.from(data.Body).toString('base64');
+          const base64Data = Buffer.from(PNGData.Body).toString('base64');
           PNGURL = `data:image/png;base64,${base64Data}`;
         }
 
-        // Update Firestore with the new prices
+        // Update user's Firestore with the new prices
         await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
         setUserSpeciesPrices(updatedPrices);
         try {
+          // Download SHP files and convert them to GeoJSON
           const { shpFile, shxFile, dbfFile } =
             await downloadS3SHPFile(forestID);
           if (shpFile && shxFile && dbfFile) {
@@ -272,6 +267,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Error downloading SHP files:', error);
         }
+        // Add the Vector data to the currentUser in the session
         setCurrentUser((prevUser) => {
           const updatedUser = {
             ...prevUser,

@@ -60,7 +60,7 @@ function Sidebar(props) {
   let logoImg = null;
   let logoText = null;
   if (logo !== undefined) {
-    if (logo.outterLink !== undefined) {
+    if (logo.outterLink !== undefined && logo.outterLink !== '') {
       logoImg = (
         <a
           href={logo.outterLink}

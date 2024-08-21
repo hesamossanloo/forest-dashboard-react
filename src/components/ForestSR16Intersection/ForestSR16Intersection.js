@@ -110,7 +110,7 @@ const ForestSR16Intersection = () => {
           <div className="title">
             <h1>
               Step 5/6 Finalizing your forestry plan. Based on the size of your
-              forest, this could take up to 4 minutes.
+              forest, this could take up to 6 minutes.
             </h1>
           </div>
           <ForestScene />
