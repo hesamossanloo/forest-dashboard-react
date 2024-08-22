@@ -18,12 +18,18 @@ const ForestSR16Intersection = () => {
   const { currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    if (!currentUser) {
+    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!localUser?.uid) {
       navigate('/signin');
+    } else if (localUser?.FBUser?.forest?.vector) {
+      navigate('/admin/map');
+    } else {
+      setShow(true);
     }
-  }, [currentUser, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     // Check if the file exists every 5 seconds
@@ -97,6 +103,10 @@ const ForestSR16Intersection = () => {
       }
     }
   };
+
+  if (!show) {
+    return null;
+  }
   return (
     <>
       {SHPFileExists && currentUser ? (

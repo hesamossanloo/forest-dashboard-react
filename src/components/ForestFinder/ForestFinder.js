@@ -54,12 +54,18 @@ const ForestFinder = () => {
   const [error, setError] = useState('');
   const [geoJson, setGeoJson] = useState(null);
 
+  const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    if (!currentUser) {
+    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!localUser?.uid) {
       navigate('/signin');
+    } else if (localUser?.FBUser?.forest?.vector) {
+      navigate('/cut');
+    } else {
+      setShow(true);
     }
-  }, [currentUser, navigate]);
+  }, [navigate]);
 
   const addKommunenummer = () => {
     if (kommunenummer) {
@@ -174,6 +180,9 @@ const ForestFinder = () => {
     }
   };
 
+  if (!show) {
+    return null;
+  }
   return (
     <div className="forestFinderContainer">
       <h1>STEP 1/6: Find Your Forest</h1>
@@ -214,7 +223,7 @@ const ForestFinder = () => {
       <Card style={{ marginBottom: 10, marginTop: 10 }}>
         <CardBody>
           <Link
-            to="https://gardskart.nibio.no/landbrukseiendom/3226/167/1/0?gardskartlayer=ar5kl7"
+            to="https://norgeskart.no"
             target="_blank"
             rel="noreferrer noopener"
           >
