@@ -31,12 +31,18 @@ const ForestCut = () => {
   // get the current user uid
   const { currentUser, updateFBUser } = useAuth();
 
+  const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    if (!currentUser) {
+    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!localUser?.uid) {
       navigate('/signin');
+    } else if (localUser?.FBUser?.forest?.vector) {
+      navigate('/vectorize');
+    } else {
+      setShow(true);
     }
-  }, [currentUser, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const checkFile = async () => {
@@ -193,6 +199,9 @@ const ForestCut = () => {
     }
   };
 
+  if (!show) {
+    return null;
+  }
   return (
     <>
       {PNGFileExists && currentUser && forestHKPNG ? (

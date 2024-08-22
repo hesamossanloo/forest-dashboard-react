@@ -14,16 +14,21 @@ const ForestModel = () => {
 
   const [SHPFileExists, setSHPFileExists] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-
   // get the current user uid
   const { currentUser } = useAuth();
 
+  const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    if (!currentUser) {
+    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!localUser?.uid) {
       navigate('/signin');
+    } else if (localUser?.FBUser?.forest?.vector) {
+      navigate('/admin/map');
+    } else {
+      setShow(true);
     }
-  }, [currentUser, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -45,6 +50,10 @@ const ForestModel = () => {
   const handleForestConfirm = async () => {
     navigate('/admin/map');
   };
+
+  if (!show) {
+    return null;
+  }
   return (
     <>
       {SHPFileExists && currentUser ? (

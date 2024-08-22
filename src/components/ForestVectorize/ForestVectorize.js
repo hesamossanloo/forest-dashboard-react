@@ -25,12 +25,18 @@ const ForestVectorize = () => {
   // get the current user uid
   const { currentUser } = useAuth();
 
+  const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    if (!currentUser) {
+    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!localUser?.uid) {
       navigate('/signin');
+    } else if (localUser?.FBUser?.forest?.vector) {
+      navigate('/admin/map');
+    } else {
+      setShow(true);
     }
-  }, [currentUser, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const checkFile = async () => {
@@ -116,6 +122,9 @@ const ForestVectorize = () => {
     navigate('/featureInfo');
   };
 
+  if (!show) {
+    return null;
+  }
   return (
     <>
       {VectorFileExists && currentUser ? (
