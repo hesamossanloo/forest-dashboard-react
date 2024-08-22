@@ -40,7 +40,8 @@ const PriceForm = () => {
     updateUserSpeciesPrices,
     authLoading,
   } = useAuth();
-  const { airTablePricesCosts, isFetchingAirtableRecords } = useAirtable();
+  const { airTablePricesCosts, isFetchingAirtableRecords, airTableTooltips } =
+    useAirtable();
   const [formData, setFormData] = useState(userSpeciesPrices || {});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -59,6 +60,14 @@ const PriceForm = () => {
     }
   }, [authLoading, userSpeciesPrices]);
 
+  // define the tommerPriserTT and driftskostnadTT objects as const and get them from the airTableTooltips.fields.
+  // where the Technical_key is equal to tommerPriserTT or driftskostnadTT
+  const tommerPriserTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'tommerPriserTT'
+  );
+  const driftskostnadTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'driftskostnadTT'
+  );
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (persistedUser) {
@@ -124,12 +133,12 @@ const PriceForm = () => {
           />
           <UncontrolledTooltip target="tommerPriserTT" delay={0}>
             <u>
-              <b>{'Tooltip Label for Tømmerpriser'}</b>
+              <b>{tommerPriserTT?.fields && tommerPriserTT.fields.Label}:</b>
             </u>
             <span>
               <br />
             </span>
-            {'Tooltip Content for Tømmerpriser'}
+            {tommerPriserTT?.fields && tommerPriserTT.fields.Tooltip}
           </UncontrolledTooltip>
           <FormGroup>
             <Label for="granSagtommerPrice">Gran - Sagtømmer</Label>
@@ -199,12 +208,14 @@ const PriceForm = () => {
             />
             <UncontrolledTooltip target="driftskostnadTT" delay={0}>
               <u>
-                <b>{'Tooltip Label for Driftskostnad'}</b>
+                <b>
+                  {driftskostnadTT?.fields && driftskostnadTT.fields.Label}:
+                </b>
               </u>
               <span>
                 <br />
               </span>
-              {'Tooltip Content for Driftskostnad'}
+              {driftskostnadTT?.fields && driftskostnadTT.fields.Tooltip}
             </UncontrolledTooltip>
             <Label for="hogstUtkPrice">Hogst & utkjøring Per m^3:</Label>
             <Input
