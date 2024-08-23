@@ -268,6 +268,7 @@ export const calculateAvgPrice = (
     return 0;
   }
 };
+
 export const generateHKPopupContent = (
   sumObj,
   selectedFeatures,
@@ -814,11 +815,19 @@ function addPopupTooltipListeners() {
       const rect = this.getBoundingClientRect();
       tooltipElement.style.top = `${rect.bottom + window.scrollY + 5}px`;
       tooltipElement.style.left = `${rect.left + window.scrollX}px`;
-
-      setTimeout(() => {
-        tooltipElement.remove();
-      }, 3000); // Remove tooltip after 3 seconds
     });
+  });
+
+  // Close tooltips when clicking outside
+  document.addEventListener('click', function (event) {
+    const tooltip = document.querySelector('.custom-tooltip');
+    if (
+      tooltip &&
+      !event.target.closest('.info-icon') &&
+      !tooltip.contains(event.target)
+    ) {
+      tooltip.remove();
+    }
   });
 }
 
