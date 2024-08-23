@@ -49,8 +49,6 @@ const ForestFinder = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [kommunenummer, setKommunenummer] = useState('');
   const [matrikkelnummer, setMatrikkelnummer] = useState('');
-  const [matrikkelnummerList, setMatrikkelnummerList] = useState([]);
-  const [kommunenummerList, setKommunenummerList] = useState([]);
   const [error, setError] = useState('');
   const [geoJson, setGeoJson] = useState(null);
 
@@ -67,45 +65,20 @@ const ForestFinder = () => {
     }
   }, [navigate]);
 
-  const addKommunenummer = () => {
-    if (kommunenummer) {
-      const kommunenummerArray = kommunenummer
-        .split(',')
-        .map((item) => item.trim());
-      setKommunenummerList([...kommunenummerList, ...kommunenummerArray]);
-      setKommunenummer('');
-    }
-  };
-  const addMatrikkelnummer = () => {
-    if (matrikkelnummer) {
-      const matrikkelnummerArray = matrikkelnummer
-        .split(',')
-        .map((item) => item.trim());
-      setMatrikkelnummerList([...matrikkelnummerList, ...matrikkelnummerArray]);
-      setMatrikkelnummer('');
-    }
-  };
-
-  const removeKommunenummer = (index) => {
-    const newKommunenummerList = [...kommunenummerList];
-    newKommunenummerList.splice(index, 1);
-    setKommunenummerList(newKommunenummerList);
-  };
-
-  const removeMatrikkelnummer = (index) => {
-    const newMatrikkelnummerList = [...matrikkelnummerList];
-    newMatrikkelnummerList.splice(index, 1);
-    setMatrikkelnummerList(newMatrikkelnummerList);
-  };
-
   const toggleModal = () => {
     setModalOpen(!modalOpen);
   };
+
   const findMyForest = () => {
-    if (kommunenummerList.length === 0 || matrikkelnummerList.length === 0) {
-      setError(
-        'Please enter at least one value for Kommunenummer and Matrikkelnummer'
-      );
+    // check if the matrikkelnummer is in 163/2 format
+    const matrikkelnummerRegex = /^\d{1,4}\/\d{1,3}$/;
+    if (!matrikkelnummerRegex.test(matrikkelnummer)) {
+      setError('Gårds/bruksnummer should be in 163/2 format');
+      return;
+    }
+    if (kommunenummer === '' || matrikkelnummer === '') {
+      setError('Please enter Kommunenummer and Gårds/bruksnummer');
+      return;
     } else {
       setError('');
       setIsLoading(true);
@@ -119,8 +92,8 @@ const ForestFinder = () => {
           body: JSON.stringify({
             inputs: {
               forestID: currentUser.uid,
-              kommunenummer: kommunenummerList[0],
-              matrikkelnummertekst: matrikkelnummerList.flat(),
+              kommunenummer,
+              matrikkelnummertekst: [matrikkelnummer],
             },
           }),
         }
@@ -180,6 +153,12 @@ const ForestFinder = () => {
     }
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      findMyForest();
+    }
+  };
+
   if (!show) {
     return null;
   }
@@ -193,33 +172,22 @@ const ForestFinder = () => {
         <Input
           type="text"
           value={kommunenummer}
+          placeholder="e.g. 3126"
           onChange={(e) => setKommunenummer(e.target.value)}
         />
-        <Button onClick={addKommunenummer}>Add</Button>
       </div>
-      {kommunenummerList.map((kommunenummer, index) => (
-        <div key={index} className="tag">
-          <span>{kommunenummer}</span>
-          <Button onClick={() => removeKommunenummer(index)}>X</Button>
-        </div>
-      ))}
       <div style={{ marginTop: 10 }}>
-        <Label>Enter your Matrikkelnummer:</Label>
+        <Label>Enter your Gårds/bruksnummer:</Label>
       </div>
       <div className="input-group">
         <Input
           type="text"
           value={matrikkelnummer}
+          placeholder="e.g. 163/2"
           onChange={(e) => setMatrikkelnummer(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
-        <Button onClick={addMatrikkelnummer}>Add</Button>
       </div>
-      {matrikkelnummerList.map((m, index) => (
-        <div key={index} className="tag">
-          <span>{m}</span>
-          <Button onClick={() => removeMatrikkelnummer(index)}>X</Button>
-        </div>
-      ))}
       <Card style={{ marginBottom: 10, marginTop: 10 }}>
         <CardBody>
           <Link
@@ -227,15 +195,16 @@ const ForestFinder = () => {
             target="_blank"
             rel="noreferrer noopener"
           >
-            If you don&apos;t know your Kommunenummer or Matrikkelnummer please
-            go to this website to find it.
+            If you don&apos;t know your Kommunenummer or Gårds- og bruksnummer
+            please go to this website and find the information under &quot;SE
+            EIENDOMSINFORMASJON&quot; section
           </Link>
         </CardBody>
       </Card>
       <Button onClick={findMyForest} style={{ marginBottom: 15 }}>
         Find My Forest
       </Button>
-      {error && <div>{error}</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
       <div className="mapContainer">
         <MapContainer center={[59.9139, 10.7522]} zoom={13}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
