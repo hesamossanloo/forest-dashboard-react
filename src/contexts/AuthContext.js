@@ -66,34 +66,37 @@ export const AuthProvider = ({ children }) => {
           // Get FBUserData from ocalstorage
           if (userDoc.exists()) {
             const FBUserData = userDoc.data();
-            // Download Forest PNG image
-            const forestID = user.uid;
-            const PNGData = await downloadS3File(
-              S3_OUTPUTS_BUCKET_NAME,
-              `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
-            );
-            if (PNGData && PNGData.Body) {
-              // Convert the downloaded data to a base64 URL
-              const base64Data = Buffer.from(PNGData.Body).toString('base64');
-              const PNGURL = `data:image/png;base64,${base64Data}`;
-              FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
-            }
-            try {
-              const { shpFile, shxFile, dbfFile } =
-                await downloadS3SHPFile(forestID);
-              if (shpFile && shxFile && dbfFile) {
-                // Convert SHP files to GeoJSON
-                const geoJsonWithInfos = await shp({
-                  shp: shpFile.Body,
-                  shx: shxFile.Body,
-                  dbf: dbfFile.Body,
-                });
-                if (FBUserData.forest) {
-                  FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
-                }
+
+            if (FBUserData.forest) {
+              // Download Forest PNG image
+              const forestID = user.uid;
+              const PNGData = await downloadS3File(
+                S3_OUTPUTS_BUCKET_NAME,
+                `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+              );
+              if (PNGData && PNGData.Body) {
+                // Convert the downloaded data to a base64 URL
+                const base64Data = Buffer.from(PNGData.Body).toString('base64');
+                const PNGURL = `data:image/png;base64,${base64Data}`;
+                FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
               }
-            } catch (error) {
-              console.error('Error downloading SHP files:', error);
+              try {
+                const { shpFile, shxFile, dbfFile } =
+                  await downloadS3SHPFile(forestID);
+                if (shpFile && shxFile && dbfFile) {
+                  // Convert SHP files to GeoJSON
+                  const geoJsonWithInfos = await shp({
+                    shp: shpFile.Body,
+                    shx: shxFile.Body,
+                    dbf: dbfFile.Body,
+                  });
+                  if (FBUserData.forest) {
+                    FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+                  }
+                }
+              } catch (error) {
+                console.error('Error downloading SHP files:', error);
+              }
             }
             if (FBUserData.prices) {
               setUserSpeciesPrices(FBUserData.prices); // Set prices in the context
@@ -120,6 +123,8 @@ export const AuthProvider = ({ children }) => {
           if (error.message !== 'The specified key does not exist.') {
             console.error('Error fetching prices:', error);
           }
+          setAuthError(error.message);
+          setAuthLoading(false);
         }
       } else {
         setAuthLoading(false);
@@ -224,67 +229,71 @@ export const AuthProvider = ({ children }) => {
       } else {
         // Download Forest PNG image
         const forestID = user.uid;
-        const PNGData = await downloadS3File(
-          S3_OUTPUTS_BUCKET_NAME,
-          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
-        );
-        // Check if the user has already set the prices in Firestore!
         const FBUserData = userDoc.data();
-        let updatedPrices = FBUserData.prices || {};
 
-        // Overwrite empty prices with Airtable prices
-        for (const key in airtablePrices) {
-          if (!updatedPrices[key] || updatedPrices[key] === '') {
-            updatedPrices[key] = airtablePrices[key];
+        if (FBUserData.forest) {
+          const PNGData = await downloadS3File(
+            S3_OUTPUTS_BUCKET_NAME,
+            `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+          );
+
+          // Handle the PNG image
+          if (PNGData && PNGData.Body) {
+            // Convert the downloaded data to a base64 URL
+            const base64Data = Buffer.from(PNGData.Body).toString('base64');
+            PNGURL = `data:image/png;base64,${base64Data}`;
           }
-        }
 
-        // Handle the PNG image
-        if (PNGData && PNGData.Body) {
-          // Convert the downloaded data to a base64 URL
-          const base64Data = Buffer.from(PNGData.Body).toString('base64');
-          PNGURL = `data:image/png;base64,${base64Data}`;
-        }
+          // Check if the user has already set the prices in Firestore!
+          let updatedPrices = FBUserData.prices || {};
 
-        // Update user's Firestore with the new prices
-        await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
-        setUserSpeciesPrices(updatedPrices);
-        try {
-          // Download SHP files and convert them to GeoJSON
-          const { shpFile, shxFile, dbfFile } =
-            await downloadS3SHPFile(forestID);
-          if (shpFile && shxFile && dbfFile) {
-            // Convert SHP files to GeoJSON
-            const geoJsonWithInfos = await shp({
-              shp: shpFile.Body,
-              shx: shxFile.Body,
-              dbf: dbfFile.Body,
-            });
-            if (FBUserData.forest) {
-              FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+          // Overwrite empty prices with Airtable prices
+          for (const key in airtablePrices) {
+            if (!updatedPrices[key] || updatedPrices[key] === '') {
+              updatedPrices[key] = airtablePrices[key];
             }
           }
-        } catch (error) {
-          console.error('Error downloading SHP files:', error);
-        }
-        // Add the Vector data to the currentUser in the session
-        setCurrentUser((prevUser) => {
-          const updatedUser = {
-            ...prevUser,
-            ...user,
-            FBUser: {
-              ...prevUser?.FBUser,
-              forest: {
-                ...prevUser?.FBUser?.forest,
-                PNG: PNGURL,
-                vector: FBUserData.forest.vector,
+
+          // Update user's Firestore with the new prices
+          await setDoc(userDocRef, { prices: updatedPrices }, { merge: true });
+          setUserSpeciesPrices(updatedPrices);
+          try {
+            // Download SHP files and convert them to GeoJSON
+            const { shpFile, shxFile, dbfFile } =
+              await downloadS3SHPFile(forestID);
+            if (shpFile && shxFile && dbfFile) {
+              // Convert SHP files to GeoJSON
+              const geoJsonWithInfos = await shp({
+                shp: shpFile.Body,
+                shx: shxFile.Body,
+                dbf: dbfFile.Body,
+              });
+              if (FBUserData.forest) {
+                FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+              }
+            }
+          } catch (error) {
+            console.error('Error downloading SHP files:', error);
+          }
+          // Add the Vector data to the currentUser in the session
+          setCurrentUser((prevUser) => {
+            const updatedUser = {
+              ...prevUser,
+              ...user,
+              FBUser: {
+                ...prevUser?.FBUser,
+                forest: {
+                  ...prevUser?.FBUser?.forest,
+                  PNG: PNGURL,
+                  vector: FBUserData.forest.vector,
+                },
+                prices: updatedPrices,
               },
-              prices: updatedPrices,
-            },
-          };
-          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-          return updatedUser;
-        });
+            };
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            return updatedUser;
+          });
+        }
         setAuthLoading(false);
       }
       return { wasSuccessful: true };
