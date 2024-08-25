@@ -24,10 +24,10 @@ import ThemeContextWrapper from './components/ThemeWrapper/ThemeWrapper';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <AuthProvider>
-    <ThemeContextWrapper>
-      <BackgroundColorWrapper>
-        <BrowserRouter>
+  <BrowserRouter>
+    <AuthProvider>
+      <ThemeContextWrapper>
+        <BackgroundColorWrapper>
           <Routes>
             <Route
               path="/admin/*"
@@ -56,8 +56,8 @@ root.render(
             <Route path="/model" element={<ForestModel />} />
             <Route path="*" element={<SignIn />} />
           </Routes>
-        </BrowserRouter>
-      </BackgroundColorWrapper>
-    </ThemeContextWrapper>
-  </AuthProvider>
+        </BackgroundColorWrapper>
+      </ThemeContextWrapper>
+    </AuthProvider>
+  </BrowserRouter>
 );
