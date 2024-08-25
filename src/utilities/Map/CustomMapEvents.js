@@ -13,9 +13,9 @@ import SkogbrukWMSFeaturesHandler from './SkogbrukWMSFeaturesHandler';
 import {
   calculateBoundingBox,
   isPointInsideFeature,
-  openHKPopupWithContent,
   WFSFeatureLayerNamefromXML,
 } from './utililtyFunctions';
+import { openHKPopupWithContent } from './popupContentUtilities';
 
 CustomMapEvents.propTypes = {
   activeOverlay: PropTypes.shape({

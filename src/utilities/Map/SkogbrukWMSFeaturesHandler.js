@@ -1,10 +1,12 @@
 import {
-  calculateFeatInfoHKTotals,
-  convertAndformatTheStringArealM2ToDAA,
   createMISButton,
-  formatNumber,
   generateHKPopupContent,
   openHKPopupWithContent,
+} from './popupContentUtilities';
+import {
+  calculateFeatInfoHKTotals,
+  convertAndformatTheStringArealM2ToDAA,
+  formatNumber,
 } from './utililtyFunctions';
 
 export const SkogbrukWMSFeaturesHandler = (
