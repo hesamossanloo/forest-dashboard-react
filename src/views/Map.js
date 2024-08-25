@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'reactstrap';
 import { fetchAirtablePrices } from 'services/airtable.js';
 import { downloadS3File } from 'services/AWS';
+import { checkFileExists } from 'services/AWS.js';
 import shp from 'shpjs';
 import CustomMapEvents from 'utilities/Map/CustomMapEvents';
 import {
@@ -98,6 +99,13 @@ function Map() {
       // Download Forest PNG image
       const downloadPNG = async () => {
         const forestID = persistedUser.uid;
+        const PMGFileExists = await checkFileExists(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+        );
+        if (!PMGFileExists) {
+          return;
+        }
         const PNGData = await downloadS3File(
           S3_OUTPUTS_BUCKET_NAME,
           `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
@@ -117,6 +125,13 @@ function Map() {
       // Download Forest SHP file
       const downloadSHP = async () => {
         const forestID = persistedUser.uid;
+        const SHPFileExists = await checkFileExists(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+        );
+        if (!SHPFileExists) {
+          return;
+        }
         const { shpFile, shxFile, dbfFile } = await downloadS3SHPFile(forestID);
         if (shpFile && shxFile && dbfFile) {
           const geoJSONWithInfo = await shp({
@@ -149,6 +164,8 @@ function Map() {
     }
     localStorage.setItem('currentUser', JSON.stringify(persistedUser));
   }, [
+    persistedUser.FBUser.forest.vector,
+    persistedUser.FBUser.forest.teig,
     persistedUser.FBUser.forest,
     persistedUser.FBUser.prices,
     persistedUser.FBUser,

@@ -13,14 +13,16 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchAirtablePrices } from 'services/airtable';
-import { downloadS3File } from 'services/AWS';
+import { checkFileExists, downloadS3File, removeS3File } from 'services/AWS';
 import { auth, db } from 'services/firebase';
 import shp from 'shpjs';
 import {
   S3_CUT_FOLDER_NAME,
   S3_FEATURE_INFO_FOLDER_NAME,
   S3_OUTPUTS_BUCKET_NAME,
+  S3_VECTORIZE_FOLDER_NAME,
 } from 'variables/AWS';
 import { initialPrices } from 'variables/forest';
 
@@ -44,6 +46,8 @@ const downloadS3SHPFile = async (forestID) => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
+
   const [currentUser, setCurrentUser] = useState(() => {
     // Retrieve the currentUser from local storage if it exists
     const savedUser = localStorage.getItem('currentUser');
@@ -70,32 +74,47 @@ export const AuthProvider = ({ children }) => {
             if (FBUserData.forest) {
               // Download Forest PNG image
               const forestID = user.uid;
-              const PNGData = await downloadS3File(
+              const PNGExists = await checkFileExists(
                 S3_OUTPUTS_BUCKET_NAME,
                 `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
               );
-              if (PNGData && PNGData.Body) {
-                // Convert the downloaded data to a base64 URL
-                const base64Data = Buffer.from(PNGData.Body).toString('base64');
-                const PNGURL = `data:image/png;base64,${base64Data}`;
-                FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
-              }
-              try {
-                const { shpFile, shxFile, dbfFile } =
-                  await downloadS3SHPFile(forestID);
-                if (shpFile && shxFile && dbfFile) {
-                  // Convert SHP files to GeoJSON
-                  const geoJsonWithInfos = await shp({
-                    shp: shpFile.Body,
-                    shx: shxFile.Body,
-                    dbf: dbfFile.Body,
-                  });
-                  if (FBUserData.forest) {
-                    FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
-                  }
+              if (PNGExists) {
+                const PNGData = await downloadS3File(
+                  S3_OUTPUTS_BUCKET_NAME,
+                  `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`
+                );
+                if (PNGData && PNGData.Body) {
+                  // Convert the downloaded data to a base64 URL
+                  const base64Data = Buffer.from(PNGData.Body).toString(
+                    'base64'
+                  );
+                  const PNGURL = `data:image/png;base64,${base64Data}`;
+                  FBUserData.forest.PNG = PNGURL; // Add the PNG URL to the user data
                 }
-              } catch (error) {
-                console.error('Error downloading SHP files:', error);
+              }
+              // Download SHP files and convert them to GeoJSON
+              const SHPFileExists = await checkFileExists(
+                S3_OUTPUTS_BUCKET_NAME,
+                `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`
+              );
+              if (SHPFileExists) {
+                try {
+                  const { shpFile, shxFile, dbfFile } =
+                    await downloadS3SHPFile(forestID);
+                  if (shpFile && shxFile && dbfFile) {
+                    // Convert SHP files to GeoJSON
+                    const geoJsonWithInfos = await shp({
+                      shp: shpFile.Body,
+                      shx: shxFile.Body,
+                      dbf: dbfFile.Body,
+                    });
+                    if (FBUserData.forest) {
+                      FBUserData.forest.vector = geoJsonWithInfos; // Add the GeoJSON to the user's forest data
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error downloading SHP files:', error);
+                }
               }
             }
             if (FBUserData.prices) {
@@ -136,6 +155,93 @@ export const AuthProvider = ({ children }) => {
 
   // Provide authError and a method to clear it to the context consumers
   const clearError = () => setAuthError(null);
+
+  const removeForest = async () => {
+    if (!currentUser) return; // Guard clause if there's no logged-in user
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        await setDoc(userDocRef, { forest: null }, { merge: true });
+        setCurrentUser((prevUser) => {
+          const updatedUser = {
+            ...prevUser,
+            FBUser: {
+              ...prevUser?.FBUser,
+              forest: null,
+            },
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          return updatedUser;
+        });
+      }
+      // Remove the files from S3
+      const forestID = currentUser.uid;
+      // Hanlde PNG file
+      const PNGFileToDelete = `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.png`;
+      const PNGFileExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        PNGFileToDelete
+      );
+      if (PNGFileExists)
+        await removeS3File(S3_OUTPUTS_BUCKET_NAME, PNGFileToDelete);
+
+      // Hanlde SVG file
+      const SVGFileToDelete = `${S3_CUT_FOLDER_NAME}/${forestID}_HK_image_cut.svg`;
+      const SVGFileExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        SVGFileToDelete
+      );
+      if (SVGFileExists) {
+        await removeS3File(S3_OUTPUTS_BUCKET_NAME, SVGFileToDelete);
+      }
+      // Handle SHP files
+      const SHPFileToDelete = `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shp`;
+      const SHPFileExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        SHPFileToDelete
+      );
+      if (SHPFileExists) {
+        await removeS3File(S3_OUTPUTS_BUCKET_NAME, SHPFileToDelete);
+        await removeS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.shx`
+        );
+        await removeS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.dbf`
+        );
+        await removeS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_VECTORIZE_FOLDER_NAME}/${forestID}_vectorized_HK.prj`
+        );
+      }
+      // Handle SHP files with infos
+      const SHPFileWithInfosToDelete = `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shp`;
+      const SHPFileWithInfosExists = await checkFileExists(
+        S3_OUTPUTS_BUCKET_NAME,
+        SHPFileWithInfosToDelete
+      );
+      if (SHPFileWithInfosExists) {
+        await removeS3File(S3_OUTPUTS_BUCKET_NAME, SHPFileWithInfosToDelete);
+        await removeS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.shx`
+        );
+        await removeS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.dbf`
+        );
+        await removeS3File(
+          S3_OUTPUTS_BUCKET_NAME,
+          `${S3_FEATURE_INFO_FOLDER_NAME}/${forestID}_vector_w_HK_infos.prj`
+        );
+      }
+    } catch (error) {
+      setAuthError(error.message);
+      console.error('Error removing forest:', error);
+    }
+  };
 
   const updateFBUser = async (user) => {
     if (!currentUser) return; // Guard clause if there's no logged-in user
@@ -425,8 +531,7 @@ export const AuthProvider = ({ children }) => {
       await signOut(auth);
       setCurrentUser(null); // Clear the current user state
       localStorage.removeItem('currentUser'); // Remove user data from local storage
-
-      return { wasSuccessful: true };
+      navigate('/signin');
     } catch (error) {
       console.error('Error signing out:', error);
       setAuthError(error.message);
@@ -449,6 +554,7 @@ export const AuthProvider = ({ children }) => {
     clearError,
     authError,
     authLoading,
+    removeForest,
   };
 
   return (

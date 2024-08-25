@@ -11,11 +11,11 @@ import { useNavigate } from 'react-router-dom';
 
 const ForestSR16Intersection = () => {
   const navigate = useNavigate();
+  const { currentUser, logout, removeForest } = useAuth();
 
   const [SHPFileExists, setSHPFileExists] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
-  const { currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const [show, setShow] = useState(false);
@@ -104,6 +104,14 @@ const ForestSR16Intersection = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await removeForest();
+      await logout();
+    } catch (error) {
+      console.error('Error handling logout:', error);
+    }
+  };
   if (!show) {
     return null;
   }
@@ -111,17 +119,13 @@ const ForestSR16Intersection = () => {
     <>
       {SHPFileExists && currentUser ? (
         <>
-          <div className="title">
-            <h1>STEP 5/6 for your Skogbruksplan is done!</h1>
-          </div>
+          <div className="title">STEP 5/6 for your Skogbruksplan is done!</div>
         </>
       ) : (
         <>
           <div className="title">
-            <h1>
-              Step 5/6 Finalizing your forestry plan. Based on the size of your
-              forest, this could take up to 6 minutes.
-            </h1>
+            Step 5/6 Finalizing your forestry plan. Based on the size of your
+            forest, this could take up to 6 minutes.
           </div>
           <ForestScene />
         </>
@@ -159,6 +163,18 @@ const ForestSR16Intersection = () => {
           </div>
         </div>
       )}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <Button color="danger" onClick={handleLogout}>
+          Cancel
+        </Button>
+      </div>
     </>
   );
 };

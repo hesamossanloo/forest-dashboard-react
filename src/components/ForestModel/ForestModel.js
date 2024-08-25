@@ -11,13 +11,12 @@ import { useNavigate } from 'react-router-dom';
 
 const ForestModel = () => {
   const navigate = useNavigate();
+  const { currentUser, logout, removeForest } = useAuth();
 
   const [SHPFileExists, setSHPFileExists] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  // get the current user uid
-  const { currentUser } = useAuth();
-
   const [show, setShow] = useState(false);
+
   // if user is not logged in redirect to sigin page
   useEffect(() => {
     const localUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -51,6 +50,15 @@ const ForestModel = () => {
     navigate('/admin/map');
   };
 
+  const handleLogout = async () => {
+    try {
+      await removeForest();
+      await logout();
+    } catch (error) {
+      console.error('Error handling logout:', error);
+    }
+  };
+
   if (!show) {
     return null;
   }
@@ -58,17 +66,13 @@ const ForestModel = () => {
     <>
       {SHPFileExists && currentUser ? (
         <>
-          <div className="title">
-            <h1>STEP 6/6 for your Skogbruksplan is done!</h1>
-          </div>
+          <div className="title">STEP 6/6 for your Skogbruksplan is done!</div>
         </>
       ) : (
         <>
           <div className="title">
-            <h1>
-              Step 6/6 Finalizing your forestry plan. Based on the size of your
-              forest, this could take up to 8 minutes.
-            </h1>
+            Step 6/6 Finalizing your forestry plan. Based on the size of your
+            forest, this could take up to 8 minutes.
           </div>
           <ForestScene />
         </>
@@ -99,6 +103,18 @@ const ForestModel = () => {
           </ModalFooter>
         </Modal>
       )}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <Button color="danger" onClick={handleLogout}>
+          Cancel
+        </Button>
+      </div>
     </>
   );
 };

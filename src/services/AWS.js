@@ -18,10 +18,13 @@ export const checkFileExists = async (bucketName, fileName) => {
     await s3.headObject(params).promise();
     return true;
   } catch (error) {
-    if (error.code === 'NotFound') {
+    if (error.code === 'NotFound' || error.statusCode === 404) {
+      return false;
+    } else {
+      // Log other errors
+      console.error('Error checking file existence:', error);
       return false;
     }
-    throw error;
   }
 };
 
@@ -48,6 +51,22 @@ export const downloadS3File = async (bucketName, fileName) => {
   try {
     const data = await s3.getObject(params).promise();
     return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const removeS3File = async (bucketName, fileName) => {
+  console.log('Removing file:', fileName);
+
+  const params = {
+    Bucket: bucketName,
+    Key: fileName,
+  };
+
+  try {
+    await s3.deleteObject(params).promise();
+    console.log('File removed:', fileName);
   } catch (error) {
     throw error;
   }

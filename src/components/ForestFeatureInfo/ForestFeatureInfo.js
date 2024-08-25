@@ -21,13 +21,14 @@ import { S3_FEATURE_INFO_FOLDER_NAME } from 'variables/AWS';
 
 const ForestFeatureInfo = () => {
   const navigate = useNavigate();
+  const { currentUser, logout, removeForest } = useAuth();
+
   const [requestSent, setRequestSent] = useState(false);
   const [SHPFileExists, setSHPFileExists] = useState(false);
   const [AllPolygonsGeoJson, setAllPolygonsGeoJson] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const hasDownloaded = useRef(false); // Use a ref to track if the file has been downloaded
   const [isLoading, setIsLoading] = useState(false);
-  const { currentUser } = useAuth();
 
   const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
@@ -53,6 +54,7 @@ const ForestFeatureInfo = () => {
       if (!VectorWInfoExists) {
         return;
       }
+      setModalOpen(true);
     };
 
     const interval = setInterval(() => {
@@ -115,7 +117,6 @@ const ForestFeatureInfo = () => {
       if (geoJson) {
         const geoJsonLayer = L.geoJSON(geoJson).addTo(map);
         map.flyToBounds(geoJsonLayer.getBounds());
-        setModalOpen(true);
       }
     }, [geoJson, map]);
 
@@ -183,6 +184,15 @@ const ForestFeatureInfo = () => {
       }
     }
   };
+
+  const handleLogout = async () => {
+    try {
+      await removeForest();
+      await logout();
+    } catch (error) {
+      console.error('Error handling logout:', error);
+    }
+  };
   if (!show) {
     return null;
   }
@@ -190,9 +200,7 @@ const ForestFeatureInfo = () => {
     <>
       {SHPFileExists && currentUser ? (
         <>
-          <div className="title">
-            <h1>STEP 4/6 for your Skogbruksplan is done!</h1>
-          </div>
+          <div className="title">STEP 4/6 for your Skogbruksplan is done!</div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -243,6 +251,18 @@ const ForestFeatureInfo = () => {
           </div>
         </div>
       )}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <Button color="danger" onClick={handleLogout}>
+          Cancel
+        </Button>
+      </div>
     </>
   );
 };
