@@ -42,8 +42,9 @@ const MapComponent = ({ geoJson }) => {
 
 const ForestFinder = () => {
   const navigate = useNavigate();
+  const { currentUser, updateFBUser, logout, removeForest } = useAuth();
+
   const [requestSent, setRequestSent] = useState(false);
-  const { currentUser, updateFBUser, logout } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -152,7 +153,14 @@ const ForestFinder = () => {
       console.error('Error:', error);
     }
   };
-
+  const handleLogout = async () => {
+    try {
+      await removeForest();
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       findMyForest();
@@ -164,7 +172,21 @@ const ForestFinder = () => {
   }
   return (
     <div className="forestFinderContainer">
-      <h1>STEP 1/6: Find Your Forest</h1>
+      <div className="title" style={{ marginTop: 0 }}>
+        STEP 1/6: Find Your Forest
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <Button color="danger" onClick={handleLogout}>
+          Cancel
+        </Button>
+      </div>
       <div>
         <Label>Enter your Kommunenummer:</Label>
       </div>

@@ -18,12 +18,12 @@ import shp from 'shpjs';
 
 const ForestVectorize = () => {
   const navigate = useNavigate();
+  const { currentUser, logout, removeForest } = useAuth();
 
   const [geoJson, setGeoJson] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [VectorFileExists, setVectorFileExists] = useState(false);
   // get the current user uid
-  const { currentUser } = useAuth();
 
   const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
@@ -92,6 +92,7 @@ const ForestVectorize = () => {
           dbf: dbfFile.Body,
         });
         setGeoJson(geoJsonData);
+        setModalOpen(true);
       }
     };
     if (VectorFileExists) {
@@ -111,7 +112,6 @@ const ForestVectorize = () => {
       if (geoJson) {
         const geoJsonLayer = L.geoJSON(geoJson).addTo(map);
         map.flyToBounds(geoJsonLayer.getBounds());
-        setModalOpen(true);
       }
     }, [geoJson, map]);
 
@@ -122,6 +122,15 @@ const ForestVectorize = () => {
     navigate('/featureInfo');
   };
 
+  const handleLogout = async () => {
+    try {
+      await removeForest();
+      await logout();
+    } catch (error) {
+      console.error('Error handling logout:', error);
+    }
+  };
+
   if (!show) {
     return null;
   }
@@ -129,9 +138,7 @@ const ForestVectorize = () => {
     <>
       {VectorFileExists && currentUser ? (
         <>
-          <div className="title">
-            <h1>STEP 3/6 for your Skogbruksplan is done!</h1>
-          </div>
+          <div className="title">STEP 3/6 for your Skogbruksplan is done!</div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -142,11 +149,9 @@ const ForestVectorize = () => {
       ) : (
         <>
           <div className="title">
-            <h1>
-              Step 3/6 Polygons Creation: Please wait while we are preparing the
-              Skogbruksplan for your forest. Based on the size of your forest,
-              this step could take up to 4 minutes.
-            </h1>
+            Step 3/6 Polygons Creation: Please wait while we are preparing the
+            Skogbruksplan for your forest. Based on the size of your forest,
+            this step could take up to 4 minutes.
           </div>
           <ForestScene />
         </>
@@ -177,6 +182,18 @@ const ForestVectorize = () => {
           </ModalFooter>
         </Modal>
       )}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <Button color="danger" onClick={handleLogout}>
+          Cancel
+        </Button>
+      </div>
     </>
   );
 };

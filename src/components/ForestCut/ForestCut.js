@@ -18,6 +18,7 @@ import { S3_VECTORIZE_FOLDER_NAME } from 'variables/AWS';
 
 const ForestCut = () => {
   const navigate = useNavigate();
+  const { currentUser, updateFBUser, logout, removeForest } = useAuth();
 
   const [PNGFileExists, setPNGFileExists] = useState(false);
   const [VectorFileExists, setVectorFileExists] = useState(false);
@@ -29,7 +30,6 @@ const ForestCut = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // get the current user uid
-  const { currentUser, updateFBUser } = useAuth();
 
   const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
@@ -106,6 +106,7 @@ const ForestCut = () => {
         const base64Data = Buffer.from(data.Body).toString('base64');
         const imageUrl = `data:image/png;base64,${base64Data}`;
         setForestHKPNG(imageUrl);
+        setModalOpen(true);
       }
     };
     if (PNGFileExists) {
@@ -136,7 +137,6 @@ const ForestCut = () => {
           L.imageOverlay(forestHKPNG, newBounds, {
             opacity: 0.5,
           }).addTo(map);
-          setModalOpen(true);
         }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -198,7 +198,14 @@ const ForestCut = () => {
       console.error('Error:', error);
     }
   };
-
+  const handleLogout = async () => {
+    try {
+      await removeForest();
+      await logout();
+    } catch (error) {
+      console.error('Error handling logout:', error);
+    }
+  };
   if (!show) {
     return null;
   }
@@ -206,9 +213,7 @@ const ForestCut = () => {
     <>
       {PNGFileExists && currentUser && forestHKPNG ? (
         <>
-          <div className="title">
-            <h1>STEP 2/6 for your Skogbruksplan is done!</h1>
-          </div>
+          <div className="title">STEP 2/6 for your Skogbruksplan is done!</div>
           <div className="mapContainer">
             <MapContainer center={[59.9139, 10.7522]} zoom={13}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -219,10 +224,8 @@ const ForestCut = () => {
       ) : (
         <>
           <div className="title">
-            <h1>
-              Step 2/6 Skogbruksplan Color Codings: Please wait while we are
-              preparing the Skogbruksplan for your forest...
-            </h1>
+            Step 2/6 Skogbruksplan Color Codings: Please wait while we are
+            preparing the Skogbruksplan for your forest...
           </div>
           <ForestScene />
         </>
@@ -260,6 +263,18 @@ const ForestCut = () => {
           </div>
         </div>
       )}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <Button color="danger" onClick={handleLogout}>
+          Cancel
+        </Button>
+      </div>
     </>
   );
 };
