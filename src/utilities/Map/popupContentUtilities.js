@@ -76,6 +76,9 @@ export const generateHKPopupContent = (
   const volume_growth_factorTT = airTableTooltips.find(
     (tooltip) => tooltip.fields.Technical_key === 'volume_growth_factor'
   );
+  const years_to_maturityTT = airTableTooltips.find(
+    (tooltip) => tooltip.fields.Technical_key === 'years_to_maturity'
+  );
   const avg_price_m3TT = airTableTooltips.find(
     (tooltip) => tooltip.fields.Technical_key === 'avg_price_m3'
   );
@@ -194,6 +197,13 @@ export const generateHKPopupContent = (
             </td>`
           : ''
       }
+      <td style="padding: 5px; border: 1px solid black; text-align: center;">
+        <span style="padding: 5px; background-color: transparent; text-align: center;">
+          <span class="info-icon" data-tooltip="${years_to_maturityTT?.fields && years_to_maturityTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+            i
+          </span>
+        </span>
+      </td>
     </tr>`;
     content += '<tr>';
     Object.values(desiredFeatInfoAttrHKLayerWithUnits).forEach((attr) => {
@@ -217,6 +227,7 @@ export const generateHKPopupContent = (
           ? `<th style="padding: 5px; border: 1px solid black;">Forv. netto verdi (kr)</th>`
           : ''
       }
+      <th style="padding: 5px; border: 1px solid black;">År til hogstmoden alder</th>
     </tr>`;
 
     selectedFeatures.forEach((feature) => {
@@ -248,17 +259,18 @@ export const generateHKPopupContent = (
       if (userSpeciesPrices.hogstUtkPrice) {
         content += `
         <td style="padding: 5px; border: 1px solid black;">
-          ${formatNumber(
-            parseFloat(
-              corresponsingAirtTableFeature.volume_at_maturity_without_bark
-            ) *
-              (parseFloat(corresponsingAirtTableFeature.avg_price_m3) -
-                parseFloat(userSpeciesPrices.hogstUtkPrice)),
-            'nb-NO',
-            1
-          )}
+        ${formatNumber(
+          parseFloat(
+            corresponsingAirtTableFeature.volume_at_maturity_without_bark
+          ) *
+            (parseFloat(corresponsingAirtTableFeature.avg_price_m3) -
+              parseFloat(userSpeciesPrices.hogstUtkPrice)),
+          'nb-NO',
+          1
+        )}
         </td>`;
       }
+      content += `<td style="padding: 5px; border: 1px solid black;">${corresponsingAirtTableFeature.years_to_maturity}</td>`;
       content += '</tr>';
     });
 
@@ -318,6 +330,11 @@ export const generateHKPopupContent = (
       2
     );
 
+    // Get the years_to_maturity
+    sumObj.years_to_maturity = parseInt(
+      corresponsingAirtTableFeature.years_to_maturity
+    );
+
     // Get the carbon_stored and convert it to Tonn
     sumObj.carbon_stored = formatNumber(
       parseFloat(corresponsingAirtTableFeature.carbon_stored) / 1000,
@@ -338,7 +355,7 @@ export const generateHKPopupContent = (
     content +=
       // Add the ID row
       `<tr style="border: 1px solid black;">
-        <td style="padding: 5px; border: 1px solid black;">ID</td>
+        <td style="padding: 5px; border: 1px solid black;">${desiredFeatInfoAttrHKLayer['teig_best_']}</td>
         <td style="padding: 5px; border: 1px solid black; font-weight: bold">${sumObj.bestand_id}</td>
         <td style="padding: 5px; border: 1px solid black; text-align: center;">
           <span style="padding: 5px; background-color: transparent; text-align: center;">
@@ -536,6 +553,37 @@ export const generateHKPopupContent = (
                   </span>
                 </td>
               </tr>`;
+      // Add the years_to_maturity
+      content += `
+            <tr style="border: 1px solid black;">
+              <td style="padding: 5px; border: 1px solid black;">År til hogstmoden alder</td>
+              <td style="padding: 5px; display: flex; justify-content: space-between;">
+                <span style="font-weight: bold">${sumObj.years_to_maturity}</span>
+              </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${years_to_maturityTT?.fields && years_to_maturityTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
+              </td>
+            </tr>`;
+    } else {
+      // Add the years_to_maturity
+      content += `
+            <tr style="border: 1px solid black;">
+              <td style="padding: 5px; border: 1px solid black;">År til hogstmoden alder</td>
+              <td style="padding: 5px; display: flex; justify-content: space-between;">
+                <span style="font-weight: bold">${sumObj.years_to_maturity}</span>
+              </td>
+              <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                <span style="padding: 5px; background-color: transparent; text-align: center;">
+                  <span class="info-icon" data-tooltip="${years_to_maturityTT?.fields && years_to_maturityTT.fields.Tooltip}" style="display: inline-block; width: 20px; height: 20px; line-height: 20px; border-radius: 50%; border: 1px solid black; background-color: lightblue; cursor: pointer;">
+                    i
+                  </span>
+                </span>
+              </td>
+            </tr>`;
     }
   }
 
