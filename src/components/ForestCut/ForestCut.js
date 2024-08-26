@@ -12,6 +12,7 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import { Button, Modal, ModalFooter } from 'reactstrap';
 
 import { doc, getDoc } from 'firebase/firestore';
+import LZString from 'lz-string';
 import { useNavigate } from 'react-router-dom';
 import { db } from 'services/firebase';
 import { S3_VECTORIZE_FOLDER_NAME } from 'variables/AWS';
@@ -34,7 +35,11 @@ const ForestCut = () => {
   const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = JSON.parse(LZString.decompressFromUTF16(compressedUserData));
+    }
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {

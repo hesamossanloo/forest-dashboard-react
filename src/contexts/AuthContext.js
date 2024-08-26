@@ -11,6 +11,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import LZString from 'lz-string';
 import PropTypes from 'prop-types';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -50,8 +51,12 @@ export const AuthProvider = ({ children }) => {
 
   const [currentUser, setCurrentUser] = useState(() => {
     // Retrieve the currentUser from local storage if it exists
-    const savedUser = localStorage.getItem('currentUser');
-    return savedUser ? JSON.parse(savedUser) : null;
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = LZString.decompressFromUTF16(compressedUserData);
+    }
+    return localUser ? JSON.parse(localUser) : null;
   });
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
@@ -133,7 +138,11 @@ export const AuthProvider = ({ children }) => {
                   ...FBUserData,
                 },
               };
-              localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+              // Compress the updated user object
+              const compressedUserData = LZString.compressToUTF16(
+                JSON.stringify(updatedUser)
+              );
+              localStorage.setItem('currentUser', compressedUserData);
               return updatedUser;
             });
           }
@@ -171,7 +180,11 @@ export const AuthProvider = ({ children }) => {
               forest: null,
             },
           };
-          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          // Compress the updated user object
+          const compressedUserData = LZString.compressToUTF16(
+            JSON.stringify(updatedUser)
+          );
+          localStorage.setItem('currentUser', compressedUserData);
           return updatedUser;
         });
       }
@@ -260,7 +273,11 @@ export const AuthProvider = ({ children }) => {
               forest: { ...prevUser?.FBUser?.forest, ...user.forest },
             },
           };
-          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          // Compress the updated user object
+          const compressedUserData = LZString.compressToUTF16(
+            JSON.stringify(updatedUser)
+          );
+          localStorage.setItem('currentUser', compressedUserData);
           return updatedUser;
         });
       }
@@ -396,7 +413,11 @@ export const AuthProvider = ({ children }) => {
                 prices: updatedPrices,
               },
             };
-            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            // Compress the updated user object
+            const compressedUserData = LZString.compressToUTF16(
+              JSON.stringify(updatedUser)
+            );
+            localStorage.setItem('currentUser', compressedUserData);
             return updatedUser;
           });
         }
@@ -449,7 +470,11 @@ export const AuthProvider = ({ children }) => {
               prices: airtablePrices,
             },
           };
-          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          // Compress the updated user object
+          const compressedUserData = LZString.compressToUTF16(
+            JSON.stringify(updatedUser)
+          );
+          localStorage.setItem('currentUser', compressedUserData);
           return updatedUser;
         });
         setAuthLoading(false);
@@ -511,7 +536,11 @@ export const AuthProvider = ({ children }) => {
               prices: updatedPrices,
             },
           };
-          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          // Compress the updated user object
+          const compressedUserData = LZString.compressToUTF16(
+            JSON.stringify(updatedUser)
+          );
+          localStorage.setItem('currentUser', compressedUserData);
           return updatedUser;
         });
         setAuthLoading(false);

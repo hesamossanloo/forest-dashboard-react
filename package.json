@@ -23,6 +23,7 @@
     "firebase": "^10.12.2",
     "geotiff": "^2.1.2",
     "leaflet": "^1.9.4",
+    "lz-string": "^1.5.0",
     "node-fetch": "^3.3.2",
     "ol": "^8.2.0",
     "papaparse": "^5.4.1",

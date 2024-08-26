@@ -1,3 +1,4 @@
+import LZString from 'lz-string';
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
@@ -5,7 +6,12 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser, setCurrentUser } = useAuth();
-  const localUser = JSON.parse(localStorage.getItem('currentUser'));
+
+  let localUser = null;
+  const compressedUserData = localStorage.getItem('currentUser');
+  if (compressedUserData) {
+    localUser = JSON.parse(LZString.decompressFromUTF16(compressedUserData));
+  }
 
   useEffect(() => {
     if (localUser && !currentUser) {
