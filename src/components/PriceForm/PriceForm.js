@@ -1,3 +1,4 @@
+import LZString from 'lz-string';
 import { useAirtable } from 'contexts/AirtableContext';
 import { useAuth } from 'contexts/AuthContext';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -48,10 +49,13 @@ const PriceForm = () => {
   // New state variable to hold the user information from localstorage
   const [persistedUser, setPersistedUser] = useState(currentUser);
   useEffect(() => {
-    // Retrieve currentUser from local storage
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setPersistedUser(JSON.parse(storedUser));
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = LZString.decompressFromUTF16(compressedUserData);
+    }
+    if (localUser) {
+      setPersistedUser(JSON.parse(localUser));
     }
   }, []);
   useEffect(() => {

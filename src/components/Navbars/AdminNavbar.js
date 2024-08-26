@@ -19,6 +19,7 @@
 import { useEffect, useState } from 'react';
 // nodejs library that concatenates classes
 import classNames from 'classnames';
+import LZString from 'lz-string';
 
 // reactstrap components
 import FeedbackForm from 'components/FeedbackForm/FeedbackForm';
@@ -48,10 +49,13 @@ function AdminNavbar(props) {
   const [persistedUser, setPersistedUser] = useState(currentUser);
 
   useEffect(() => {
-    // Retrieve currentUser from local storage
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setPersistedUser(JSON.parse(storedUser));
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = LZString.decompressFromUTF16(compressedUserData);
+    }
+    if (localUser) {
+      setPersistedUser(JSON.parse(localUser));
     }
   }, []);
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { checkFileExists, downloadS3File } from 'services/AWS';
 import { S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
 import './ForestVectorize.scss';
+import LZString from 'lz-string';
 
 import ForestScene from 'components/ForestScene/ForestScene';
 import L from 'leaflet';
@@ -28,7 +29,11 @@ const ForestVectorize = () => {
   const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = JSON.parse(LZString.decompressFromUTF16(compressedUserData));
+    }
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {

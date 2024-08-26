@@ -17,6 +17,8 @@ import {
 import lottieSuccess from '../../assets/lotties/success.json';
 import './ForestFinder.css';
 
+import LZString from 'lz-string';
+
 const defaultLottieOptions = {
   loop: false,
   autoplay: true,
@@ -56,7 +58,11 @@ const ForestFinder = () => {
   const [show, setShow] = useState(false);
   // if user is not logged in redirect to sigin page
   useEffect(() => {
-    const localUser = JSON.parse(localStorage.getItem('currentUser'));
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = JSON.parse(LZString.decompressFromUTF16(compressedUserData));
+    }
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {

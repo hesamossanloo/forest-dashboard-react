@@ -3,6 +3,7 @@ import ToggleSwitch from 'components/ToggleSwitch/ToggleSwitch.js';
 import { useAuth } from 'contexts/AuthContext.js';
 import { MapFilterContext } from 'contexts/MapFilterContext.js';
 import L from 'leaflet';
+import LZString from 'lz-string';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
   GeoJSON,
@@ -82,10 +83,13 @@ function Map() {
 
   // Get the stored currentUser from the localstorage
   useEffect(() => {
-    // Retrieve currentUser from local storage
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
+    let localUser = null;
+    const compressedUserData = localStorage.getItem('currentUser');
+    if (compressedUserData) {
+      localUser = LZString.decompressFromUTF16(compressedUserData);
+    }
+    if (localUser) {
+      const parsedUser = JSON.parse(localUser);
       setPersistedUser(parsedUser);
     } else {
       navigate('/signin');
@@ -162,7 +166,11 @@ function Map() {
         setUserForestTeig(JSON.parse(forest));
       }
     }
-    localStorage.setItem('currentUser', JSON.stringify(persistedUser));
+    // Compress the updated user object
+    const compressedUserData = LZString.compressToUTF16(
+      JSON.stringify(persistedUser)
+    );
+    localStorage.setItem('currentUser', compressedUserData);
   }, [
     persistedUser.FBUser.forest.vector,
     persistedUser.FBUser.forest.teig,
