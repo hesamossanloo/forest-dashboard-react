@@ -1,5 +1,5 @@
 # Forest Dashboard React
-Demo a simple dashboard for a Forest management inventory
+A dashboard for Forest management, using ML and remote-sensing bring value to forester to make better decision based on bespoke data
 
 # How to run the project
 run the following command
