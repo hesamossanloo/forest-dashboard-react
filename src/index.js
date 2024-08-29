@@ -1,6 +1,4 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import 'assets/css/nucleo-icons.css';
-import 'assets/demo/demo.css';
 import 'assets/scss/black-dashboard-react.scss';
 import ForestCut from 'components/ForestCut/ForestCut';
 import ForestFeatureInfo from 'components/ForestFeatureInfo/ForestFeatureInfo';
