@@ -1,30 +1,11 @@
-/*!
-
-=========================================================
-* Black Dashboard React v1.2.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/black-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/black-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-/*eslint-disable*/
 import React from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 // nodejs library to set properties for components
 import { PropTypes } from 'prop-types';
 
 // javascript plugin used to create scrollbars on windows
 import PerfectScrollbar from 'perfect-scrollbar';
 
-// reactstrap components
 import Accordion from 'components/Accordion/Accordion';
 import HKFilters from 'components/Filters/HKFilters';
 import PriceForm from 'components/PriceForm/PriceForm';
@@ -35,13 +16,7 @@ import { Nav } from 'reactstrap';
 var ps;
 
 function Sidebar(props) {
-  const location = useLocation();
   const sidebarRef = React.useRef(null);
-  // verifies if routeName is the one active (in browser input)
-  const activeRoute = (routeName) => {
-    return location.pathname === routeName ? 'active' : '';
-  };
-
   useEffect(() => {
     if (navigator.platform.indexOf('Win') > -1) {
       ps = new PerfectScrollbar(sidebarRef.current, {
@@ -56,7 +31,7 @@ function Sidebar(props) {
       }
     };
   });
-  const { routes, rtlActive, logo } = props;
+  const { routes, logo } = props;
   let logoImg = null;
   let logoText = null;
   if (logo !== undefined) {
@@ -67,6 +42,7 @@ function Sidebar(props) {
           className="simple-text logo-mini"
           target="_blank"
           onClick={props.toggleSidebar}
+          rel="noreferrer"
         >
           <div className="logo-img">
             <img src={logo.imgSrc} alt="SkogApp-logo" />
@@ -79,6 +55,7 @@ function Sidebar(props) {
           className="simple-text logo-normal"
           target="_blank"
           onClick={props.toggleSidebar}
+          rel="noreferrer"
         >
           {logo.text}
         </a>
@@ -121,19 +98,14 @@ function Sidebar(props) {
               {routes.map((prop, key) => {
                 if (prop.redirect) return null;
                 return (
-                  <li
-                    className={
-                      activeRoute(prop.path) + (prop.pro ? ' active-pro' : '')
-                    }
-                    key={key}
-                  >
+                  <li key={key}>
                     <NavLink
-                      to={prop.layout + prop.path}
+                      to={prop.path}
                       className="nav-link"
                       onClick={props.toggleSidebar}
                     >
                       <i className={prop.icon} />
-                      <p>{rtlActive ? prop.rtlName : prop.name}</p>
+                      <p>{prop.name}</p>
                     </NavLink>
                     {prop.name === 'Map' && (
                       <>
@@ -167,7 +139,6 @@ function Sidebar(props) {
 Sidebar.propTypes = {
   // if true, then instead of the routes[i].name, routes[i].rtlName will be rendered
   // insde the links of this component
-  rtlActive: PropTypes.bool,
   routes: PropTypes.arrayOf(PropTypes.object),
   logo: PropTypes.shape({
     // innerLink is for links that will direct the user within the app
@@ -181,6 +152,7 @@ Sidebar.propTypes = {
     // the image src of the logo
     imgSrc: PropTypes.string,
   }),
+  toggleSidebar: PropTypes.func, // Add this line to validate toggleSidebar prop
 };
 
 export default Sidebar;

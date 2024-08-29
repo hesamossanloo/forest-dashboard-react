@@ -28,7 +28,7 @@ root.render(
         <BackgroundColorWrapper>
           <Routes>
             <Route
-              path="/admin/*"
+              path="/*"
               element={
                 <PrivateRoute>
                   <AirtableProvider>
@@ -52,7 +52,6 @@ root.render(
               element={<ForestSR16Intersection />}
             />
             <Route path="/model" element={<ForestModel />} />
-            <Route path="*" element={<SignIn />} />
           </Routes>
         </BackgroundColorWrapper>
       </ThemeContextWrapper>

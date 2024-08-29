@@ -1,17 +1,15 @@
-// src/layouts/Admin/Admin.js
 import logo from 'assets/img/favicon.png';
-import Footer from 'components/Footer/Footer.js';
 import AdminNavbar from 'components/Navbars/AdminNavbar.js';
 import Sidebar from 'components/Sidebar/Sidebar.js';
 import { BackgroundColorContext } from 'contexts/BackgroundColorContext';
 import PerfectScrollbar from 'perfect-scrollbar';
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import routes from 'routes.js';
 
 var ps;
 
-function Admin(props) {
+function Admin() {
   const location = useLocation();
   const mainPanelRef = useRef(null);
   const [sidebarOpened, setsidebarOpened] = useState(
@@ -72,7 +70,7 @@ function Admin(props) {
 
   const getBrandText = (path) => {
     for (let i = 0; i < routes.length; i++) {
-      if (location.pathname.indexOf(routes[i].layout + routes[i].path) !== -1) {
+      if (location.pathname.indexOf(routes[i].path) !== -1) {
         return routes[i].name;
       }
     }
@@ -87,7 +85,7 @@ function Admin(props) {
             <Sidebar
               routes={routes}
               logo={{
-                innerLink: '/admin/map',
+                innerLink: '/map',
                 text: 'SKOGAPP',
                 imgSrc: logo,
               }}
@@ -99,14 +97,7 @@ function Admin(props) {
                 toggleSidebar={toggleSidebar}
                 sidebarOpened={sidebarOpened}
               />
-              <Routes>
-                {getRoutes(routes)}
-                <Route
-                  path="/"
-                  element={<Navigate to="/admin/map" replace />}
-                />
-              </Routes>
-              {location.pathname === '/admin/map' ? null : <Footer fluid />}
+              <Routes>{getRoutes(routes)}</Routes>
             </div>
           </div>
         </>

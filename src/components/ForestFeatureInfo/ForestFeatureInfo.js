@@ -43,7 +43,7 @@ const ForestFeatureInfo = () => {
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {
-      navigate('/admin/map');
+      navigate('/map');
     } else {
       setShow(true);
     }

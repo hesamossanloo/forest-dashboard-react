@@ -7,8 +7,8 @@ import ForestScene from 'components/ForestScene/ForestScene';
 import 'leaflet/dist/leaflet.css';
 import { Button, Modal, ModalFooter } from 'reactstrap';
 
-import { useNavigate } from 'react-router-dom';
 import LZString from 'lz-string';
+import { useNavigate } from 'react-router-dom';
 
 const ForestSR16Intersection = () => {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const ForestSR16Intersection = () => {
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {
-      navigate('/admin/map');
+      navigate('/map');
     } else {
       setShow(true);
     }
