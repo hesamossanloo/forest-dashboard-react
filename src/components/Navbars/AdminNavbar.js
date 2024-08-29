@@ -1,27 +1,10 @@
 /* eslint-disable react/prop-types */
-/*!
 
-=========================================================
-* Black Dashboard React v1.2.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/black-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/black-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
 import { useEffect, useState } from 'react';
 // nodejs library that concatenates classes
 import classNames from 'classnames';
 import LZString from 'lz-string';
 
-// reactstrap components
 import FeedbackForm from 'components/FeedbackForm/FeedbackForm';
 import { useAuth } from 'contexts/AuthContext';
 import { FiMessageSquare } from 'react-icons/fi';

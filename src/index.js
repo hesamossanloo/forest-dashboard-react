@@ -1,6 +1,4 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import 'assets/css/nucleo-icons.css';
-import 'assets/demo/demo.css';
 import 'assets/scss/black-dashboard-react.scss';
 import ForestCut from 'components/ForestCut/ForestCut';
 import ForestFeatureInfo from 'components/ForestFeatureInfo/ForestFeatureInfo';
@@ -30,7 +28,7 @@ root.render(
         <BackgroundColorWrapper>
           <Routes>
             <Route
-              path="/admin/*"
+              path="/*"
               element={
                 <PrivateRoute>
                   <AirtableProvider>
@@ -54,7 +52,6 @@ root.render(
               element={<ForestSR16Intersection />}
             />
             <Route path="/model" element={<ForestModel />} />
-            <Route path="*" element={<SignIn />} />
           </Routes>
         </BackgroundColorWrapper>
       </ThemeContextWrapper>

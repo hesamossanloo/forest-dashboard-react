@@ -29,7 +29,7 @@ const ForestModel = () => {
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {
-      navigate('/admin/map');
+      navigate('/map');
     } else {
       setShow(true);
     }
@@ -53,7 +53,7 @@ const ForestModel = () => {
   };
 
   const handleForestConfirm = async () => {
-    navigate('/admin/map');
+    navigate('/map');
   };
 
   const handleLogout = async () => {

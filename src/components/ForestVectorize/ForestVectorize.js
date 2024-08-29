@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useAuth } from 'contexts/AuthContext';
+import LZString from 'lz-string';
 import { useEffect, useState } from 'react';
 import { checkFileExists, downloadS3File } from 'services/AWS';
 import { S3_OUTPUTS_BUCKET_NAME } from 'variables/AWS';
 import './ForestVectorize.scss';
-import LZString from 'lz-string';
 
 import ForestScene from 'components/ForestScene/ForestScene';
 import L from 'leaflet';
@@ -37,7 +37,7 @@ const ForestVectorize = () => {
     if (!localUser?.uid) {
       navigate('/signin');
     } else if (localUser?.FBUser?.forest?.vector) {
-      navigate('/admin/map');
+      navigate('/map');
     } else {
       setShow(true);
     }
